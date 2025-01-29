@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activate Your Gemten Account</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: linear-gradient(135deg, hsl(210, 33%, 6%), #005bb5);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      color: #fff;
+    }
+
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 0;
+      color: #ffde59;
+    }
+
+    .sub-header {
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+
+    .body {
+      margin-top: 20px;
+      line-height: 1.8;
+    }
+
+    .highlight {
+      color: #ffde59;
+      font-weight: bold;
+    }
+
+    .button {
+      display: inline-block;
+      margin: 20px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      background: linear-gradient(135deg, hsl(220, 4%, 14%), #114579);
+      color: #ffde59;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+    }
+
+    .button:hover {
+      background: #ffde59;
+      color: #114579;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 30px;
+    }
+
+    .footer a {
+      color: #ffde59;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="header">
+      <h1>Welcome to Gemten</h1>
+      <p class="sub-header">Your gateway to exciting job opportunities!</p>
+    </div>
+
+    <!-- Body Section -->
+    <div class="body">
+      <p>Dear <strong>{{ user.first_name|escape }} {{ user.last_name|escape }}</strong>,</p>
+      <p>
+        We're excited to have you join Gemten! To get started, please activate your account by clicking the link below.
+      </p>
+
+      <p style="word-break: break-all; text-align: center;">{{ activation_url }}</p>
+
+      <!-- Footer Section -->
+      <div class="footer">
+        <p>&copy; 2024 Gemten. All rights reserved.</p>
+        <p>
+          <a href="#">Privacy Policy</a> |
+          <a href="#">Terms of Service</a>
+        </p>
+        <p>Need help? Contact us at <a href="mailto:support@gemten.com">support@gemten.com</a></p>
+      </div>
+    </div>
+  </div> <!-- Properly closed container -->
+</body>
+
+</html>

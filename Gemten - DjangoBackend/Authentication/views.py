@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializer import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer
 
-from . models import UserProfile, User
 from .response import *
+from . models import UserProfile, User
 
 class UserViewSet(APIView):
     def get(self, request):
@@ -65,3 +65,4 @@ class UserViewSet(APIView):
         user.save()
 
         return user, None
+    
