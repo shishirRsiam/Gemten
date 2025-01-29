@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import UserSerializer, UserProfileSerializer
-
+from django.utils.http import urlsafe_base64_decode
 from .response import *
 from . models import UserProfile, User
+from django.contrib.auth.tokens import default_token_generator
 
 class UserViewSet(APIView):
     def get(self, request):
@@ -66,3 +67,21 @@ class UserViewSet(APIView):
 
         return user, None
     
+class EmailVerifyAPIView(APIView):
+    def get(self, request, uid, token):
+        id = urlsafe_base64_decode(uid).decode()
+        user = User.objects.get(id=id)
+        if user:
+            if user.is_active:
+                response = get_already_account_activation_response()
+                return Response(response, status=200)
+            
+            elif default_token_generator.check_token(user, token):
+                user.is_active = True
+                user.save()
+
+                response = get_successful_account_activation_response()
+                return Response(response, status=200)
+
+        response = get_failed_account_activation_response()
+        return Response(response, status=400)

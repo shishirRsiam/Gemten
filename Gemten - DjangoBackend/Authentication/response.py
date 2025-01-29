@@ -26,7 +26,7 @@ def get_successful_account_activation_response():
         "status": True,
         "title": "Account Activation Successful.",
         "message": "Your account is now activated. You can now login.",
-        }
+    }
     return response
 
 def get_failed_account_activation_response():
