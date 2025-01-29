@@ -5,6 +5,8 @@ from django.utils.http import urlsafe_base64_decode
 from .response import *
 from . models import UserProfile, User
 from django.contrib.auth.tokens import default_token_generator
+from rest_framework.authtoken.models import Token
+
 
 class UserViewSet(APIView):
     def get(self, request):
@@ -67,6 +69,7 @@ class UserViewSet(APIView):
 
         return user, None
     
+    
 class EmailVerifyAPIView(APIView):
     def get(self, request, uid, token):
         id = urlsafe_base64_decode(uid).decode()
@@ -85,3 +88,28 @@ class EmailVerifyAPIView(APIView):
 
         response = get_failed_account_activation_response()
         return Response(response, status=400)
+
+
+class LoginApiView(APIView):
+    def post(self, request):
+        password = request.data.get('password')
+        user_info = request.data.get('user_info')
+        user = User.objects.filter(username=user_info).first()
+        if not user:
+            user = User.objects.filter(email=user_info).first()
+        if not user:
+            user = User.objects.filter(userprofile__phone_no=user_info).first()
+
+        if user and user.check_password(password):
+            if not user.is_active:
+                response = get_account_not_active_response()
+                return Response(response, status=400)
+
+            token, _ = Token.objects.get_or_create(user=user) 
+            user_serializer = UserSerializer(user)
+            response = get_successful_login_response(user_serializer, token)
+            return Response(response, status=200)
+        
+        response = get_failed_login_response()
+        return Response(response, status=400)
+    

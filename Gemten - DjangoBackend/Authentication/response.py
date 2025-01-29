@@ -1,16 +1,11 @@
-def get_successful_login_response(user, token):
+def get_successful_login_response(user_serializer, token):
     response = {
         "status": True,
         "title": "Login successful",
         "message": "You are now logged in",
         "token": f'Token {token.key}',
-        'user': {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            'role': user.userprofile.role,
-            'name': user.first_name + ' ' + user.last_name,
-        }}
+        'user': user_serializer.data,
+    }
     return response
 
 def get_username_or_email_or_phone_already_exists_response(name):
@@ -59,7 +54,7 @@ def get_account_not_active_response(**kwargs):
     response = {
         "status": False,
         "title": "Opps! Login failed!",
-        "message": "Account is not active! Check your email to activate your account.",
+        "message": "Account Email is not verified! Check your email to verify your account.",
     }
     return response
 
