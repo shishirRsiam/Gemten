@@ -14,8 +14,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
-
-    def save(self, *args, **kwargs):
-        print('user profile saved')
-        super().save(*args, **kwargs)
-    
