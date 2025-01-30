@@ -1,26 +1,29 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import UserSerializer, UserProfileSerializer
-from django.utils.http import urlsafe_base64_decode
 from .response import *
 from . models import UserProfile, User
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from django.contrib.auth import login, logout
-
+from rest_framework.authtoken.models import Token
+from django.utils.http import urlsafe_base64_decode
+from rest_framework.permissions import IsAuthenticated
+from .serializers import UserSerializer, UserProfileSerializer
+from django.contrib.auth.tokens import default_token_generator
 
 
 class UserViewSet(APIView):
-    def get(self, request):
-        id = request.query_params.get("id", None)
-        if id:
-            user_profile = UserProfile.objects.get(id=id)
-            user_profile_serializer = UserProfileSerializer(user_profile)
-            return Response({"user": user_profile_serializer.data})
+    def get(self, request, profile_id=None):
+        all_user = request.query_params.get("all_user", None)
+        if all_user:
+            user_profile_serializer = UserProfileSerializer(UserProfile.objects.all(), many=True)
+            return Response({"all_user": user_profile_serializer.data})
         
-        user_profile_serializer = UserProfileSerializer(UserProfile.objects.all(), many=True)
-        return Response({"user": user_profile_serializer.data})
+        if profile_id:
+            user_profile = UserProfile.objects.get(id=profile_id)
+            user_profile_serializer = UserProfileSerializer(user_profile)
+            return Response({"user_profile": user_profile_serializer.data})
+        
+        user_profile_serializer = UserProfileSerializer(request.user.userprofile)
+        return Response({"user_profile": user_profile_serializer.data})
     
     def post(self, request):
         phone_no = request.data.get("phone_no")
@@ -116,6 +119,7 @@ class LoginApiView(APIView):
         response = get_failed_login_response()
         return Response(response, status=400)
     
+
 class LogoutApiView(APIView):
     def get(self, request):
         try:
@@ -124,4 +128,3 @@ class LogoutApiView(APIView):
         except Exception as e:
             return Response({"error": "Something went wrong"}, status=500)  
 
-  
