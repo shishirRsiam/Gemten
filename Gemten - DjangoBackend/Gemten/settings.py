@@ -1,3 +1,4 @@
+import os
 from . import credentials
 from pathlib import Path
 
@@ -10,8 +11,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
-
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -20,7 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework', 'rest_framework.authtoken',
-    'Authentication', 'Email_Sent', 'Post',
+    'Authentication', 'Email_Sent', 'Post', 'Connect',
 ]
 
 MIDDLEWARE = [
@@ -102,8 +101,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+MEDIA_URL = '/Media/'
 STATIC_URL = 'static/'
-
+MEDIA_ROOT = BASE_DIR / 'Media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
