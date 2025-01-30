@@ -7,7 +7,7 @@ from Authentication.serializers import UserSerializer
 class PostMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostMedia
-        fields = ['id', 'file', 'media_type', 'uploaded_at']
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -28,11 +28,4 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'content', 'media', 'created_at', 'updated_at']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
-    def create(self, validated_data):
-        media_data = validated_data.pop('media', [])  
-        post = Post.objects.create(**validated_data)  
-        
-        for media in media_data:
-            PostMedia.objects.create(post=post, **media)  
-
-        return post
+    

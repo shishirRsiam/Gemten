@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .models import Post, Comment
+from .models import Post, Comment, PostMedia
 from .serializers import PostSerializer, CommentSerializer
 
 class PostAPIView(APIView):
@@ -20,9 +20,14 @@ class PostAPIView(APIView):
     def post(self, request):
         serializer = PostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            post = serializer.save(user=request.user)
+            self.upload_media(post, request.FILES.getlist('media'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def upload_media(self, post, media_data):
+        for media in media_data:
+            PostMedia.objects.create(post=post, file=media) 
     
     def delete(self, request, post_id):
         post = Post.objects.get(id=post_id)

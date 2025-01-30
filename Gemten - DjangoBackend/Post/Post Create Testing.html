@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Testing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h2 class="text-xl font-bold mb-4 text-center">Upload PNG to API</h2>
+
+        <input type="file" id="fileInput" class="block w-full p-2 border border-gray-300 rounded-md mb-4"
+            accept="image/png">
+
+        <button onclick="uploadFile()"
+            class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition">
+            Upload
+        </button>
+
+        <div id="response" class="mt-4 text-sm text-gray-700"></div>
+    </div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const responseDiv = document.getElementById("response");
+
+            if (fileInput.files.length === 0) {
+                responseDiv.innerHTML = "<p class='text-red-500'>Please select a PNG file!</p>";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("media", fileInput.files[0]);  // File input
+            formData.append("media_type", "image/png");   // Optional: Media type
+            formData.append("content", "This is my test post!");  // Additional post content
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/posts/", {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Token 9151207dbb404ed62fb666f055045b5663f38751`,
+                    },
+                    body: formData,
+                });
+
+                if (!response.ok) throw new Error("Upload failed!");
+
+                const result = await response.json();
+                responseDiv.innerHTML = `<p class='text-green-500'>${JSON.stringify(result)}</p>`;
+            } catch (error) {
+                responseDiv.innerHTML = "<p class='text-red-500'>Error uploading file</p>";
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
