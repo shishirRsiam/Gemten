@@ -7,6 +7,7 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     content = models.TextField(blank=True, null=True)
     likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
+    views = models.PositiveIntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
