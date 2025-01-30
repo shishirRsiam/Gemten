@@ -7,6 +7,9 @@ from . models import UserProfile, User
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import login, logout
+
+
 
 class UserViewSet(APIView):
     def get(self, request):
@@ -104,7 +107,7 @@ class LoginApiView(APIView):
             if not user.is_active:
                 response = get_account_not_active_response()
                 return Response(response, status=400)
-
+            
             token, _ = Token.objects.get_or_create(user=user) 
             user_serializer = UserSerializer(user)
             response = get_successful_login_response(user_serializer, token)
@@ -114,9 +117,11 @@ class LoginApiView(APIView):
         return Response(response, status=400)
     
 class LogoutApiView(APIView):
-    def post(self, request):
+    def get(self, request):
         try:
             request.user.auth_token.delete()
             return Response({"message": "Logout successful"}, status=200)
         except Exception as e:
-            return Response({"error": "Something went wrong"}, status=500)
+            return Response({"error": "Something went wrong"}, status=500)  
+
+  
