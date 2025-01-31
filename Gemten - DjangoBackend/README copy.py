@@ -7,7 +7,6 @@ This is a full-stack project with a **Django** backend and a **React** frontend.
 
 ---
 
-
 ### 1. `GET /auth/`
 Fetch logget in User Info. Requires authentication token in the `Authorization` header.
 
@@ -50,52 +49,6 @@ Fetch logget in User Info. Requires authentication token in the `Authorization` 
   ```
 
 ---
-
-### 2. `GET /user/{id}/`
-Fetch Other User Info.
-
-#### Request
-- **Method**: `GET`
-- **URL**: `/auth/`
-
-#### Response
-- **Status**: `200 OK`
-- **Body**:
-  ```json
-    {
-      "user_profile": {
-          "id": 5,
-          "user": {
-              "username": "siam",
-              "email": "siam@gmail.com",
-              "first_name": "Sishir",
-              "last_name": "Siam"
-          },
-          "phone_no": "+8801234563890",
-          "date_of_birth": "2020-12-12",
-          "gender": "Male",
-          "profile_pic": "/Media/profile_pics/default.png",
-          "address": null,
-          "bio": null
-      }
-  }
-  ```
-
-#### Error Response
-- **Status**: `400 Bad Request`
-- **Body**:
-  ```json
-  {
-    "status": "error",
-    "message": "Failed to fetch users.",
-    "error_code": "FETCH_FAILED"
-  }
-  ```
-
----
-
-
-
 ### 1. `GET /user/`
 Fetch a list of all users.
 
