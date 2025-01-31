@@ -1,5 +1,5 @@
 from django.db import models
-
+from Connect.models import Friendship
 from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
@@ -14,3 +14,4 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+    

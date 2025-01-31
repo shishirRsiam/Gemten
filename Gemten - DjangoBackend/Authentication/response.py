@@ -74,3 +74,12 @@ def get_use_creation_response(user_profile_serializer):
         "user": user_profile_serializer.data
     }
     return response
+
+
+def get_user_profile_response(user_profile_serializer, friends_serializer=None):
+    response = {
+        "status": True,
+        "user_profile": user_profile_serializer.data,
+        'friends': friends_serializer.data
+    }
+    return response

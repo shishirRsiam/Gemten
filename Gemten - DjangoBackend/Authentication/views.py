@@ -1,4 +1,5 @@
 from .response import *
+from Connect.models import Friendship
 from . models import UserProfile, User
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -23,7 +24,9 @@ class UserViewSet(APIView):
             return Response({"user_profile": user_profile_serializer.data})
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
-        return Response({"user_profile": user_profile_serializer.data})
+        friends_serializer = UserProfileSerializer(self.get_friends(request.user), many=True)
+        response = get_user_profile_response(user_profile_serializer, friends_serializer)
+        return Response(response)
     
     def post(self, request):
         phone_no = request.data.get("phone_no")
@@ -75,6 +78,11 @@ class UserViewSet(APIView):
 
         return user, None
     
+    def get_friends(self, user):
+        friendships = Friendship.objects.filter(user1=user) | Friendship.objects.filter(user2=user)
+        friends = [friendship.user1 if friendship.user2 == user else friendship.user2 for friendship in friendships]
+        print(friends)
+        return friends
 
 class EmailVerifyAPIView(APIView):
     def get(self, request, uid, token):

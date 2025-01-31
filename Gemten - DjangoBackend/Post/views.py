@@ -94,3 +94,4 @@ class LikePostAPIView(APIView):
             liked = True
 
         return Response({"liked": liked, "total_likes": post.total_likes()}, status=status.HTTP_200_OK)
+
