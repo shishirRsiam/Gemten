@@ -15,7 +15,7 @@ class UserViewSet(APIView):
         all_user = request.query_params.get("all_user", None)
         if all_user:
             user_profile_serializer = UserProfileSerializer(UserProfile.objects.all(), many=True)
-            return Response({"all_user": user_profile_serializer.data})
+            return Response({"status": True, "all_user": user_profile_serializer.data})
         
         if profile_id:
             user_profile = UserProfile.objects.get(id=profile_id)
