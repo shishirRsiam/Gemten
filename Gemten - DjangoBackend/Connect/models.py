@@ -14,8 +14,9 @@ class FriendRequest(models.Model):
 
     def accept(self):
         Friendship.objects.create(user1=self.sender, user2=self.receiver)
-        self.is_accepted = True
-        self.save()
+        # self.is_accepted = True
+        # self.save()
+        self.delete()
 
     def reject(self):
         self.delete()
