@@ -51,7 +51,6 @@ export default function App() {
             }
           });
           setUser(response.data.user_info);
-          console.log('Response:', response.data);
         } catch (error) {
           alert('Error fetching user data');
           console.error('Error fetching user data:', error.response.data);

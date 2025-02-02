@@ -20,7 +20,6 @@ const LoginScreen = ({ route, navigation }) => {
         };
         try {
             const response = await axios.post(Api.login, loginData);
-            console.log("Response:", response.data);
             setUser(response.data.user_info);
             alert("Login Successfull");
             await AsyncStorage.setItem("authToken", response.data.token);

@@ -1,29 +1,97 @@
 // App.js
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import axios from 'axios';
 import Api from '../services/Api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [newComment, setNewComment] = useState({ postId: null, text: '' });
   useEffect(() => {
-    console.log('Home Screen Loaded');
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(Api.get_posts);
-        setPosts(response.data); // Update state with fetched data
-        console.log(response.data); // Log response data
+        const response = await axios.get(Api.get_posts, {
+          headers: {
+            Authorization: await AsyncStorage.getItem('authToken'),
+          },
+        });
+        setPosts(response.data);
       } catch (error) {
         console.error('Error fetching posts:', error.message || error);
       } finally {
-        setLoading(false); // Stop loading regardless of success or failure
+        setLoading(false);
       }
     };
 
     fetchPosts();
   }, []);
+
+  const handleLikePost = async (postId) => {
+    try {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+              ...post, is_liked: !post.is_liked,
+              likes_count: post.is_liked ? post.likes_count - 1 : post.likes_count + 1,
+            }
+            : post
+        )
+      );
+      
+      const api = `${Api.like_post}/${postId}/like/`;
+      const response = await axios.post(api, {}, {
+        headers: {
+          Authorization: await AsyncStorage.getItem('authToken'),
+        },
+      });
+    } catch (error) {
+      console.error('Error liking post:', error.message || error);
+      alert('Failed to like the post. Please try again.');
+    }
+  };
+
+  const handleAddComment = async (postId) => {
+    try {
+      if (!newComment.text.trim()) {
+        alert('Comment cannot be empty');
+        return;
+      }
+
+      const response = await axios.post(`${Api.add_comment}/${postId}/`, {
+        content: newComment.text,
+      });
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+              ...post,
+              comments: [...(post.comments || []), response.data],
+            }
+            : post
+        )
+      );
+
+      setNewComment({ postId: null, text: '' });
+    } catch (error) {
+      console.error('Error adding comment:', error.message || error);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
 
   if (loading) {
     return (
@@ -36,7 +104,7 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Gemten Feed</Text>
+      <Text style={styles.title}>Social Media Feed</Text>
 
       {posts.length > 0 ? (
         <FlatList
@@ -46,7 +114,7 @@ const HomeScreen = () => {
             <View style={styles.postCard}>
               {/* User Info Section */}
               <View style={styles.userInfo}>
-                <Text style={styles.username}>@{item.user.username}</Text>
+                <Text style={styles.username}>{item.user.username}</Text>
                 <Text style={styles.fullName}>
                   {item.user.first_name} {item.user.last_name}
                 </Text>
@@ -55,10 +123,72 @@ const HomeScreen = () => {
               {/* Post Content */}
               <Text style={styles.postContent}>{item.content}</Text>
 
-              {/* Timestamp */}
-              <Text style={styles.timestamp}>
-                {new Date(item.created_at).toLocaleString()}
-              </Text>
+              {/* Media Section */}
+              {item.media && item.media.length > 0 ? (
+                <View style={styles.mediaContainer}>
+                  {item.media.map((mediaItem, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: mediaItem.url }}
+                      style={styles.mediaImage}
+                    />
+                  ))}
+                </View>
+              ) : null}
+
+              {/* Views, Timestamp, and Likes */}
+              <View style={styles.metaInfo}>
+                <Text style={styles.metaText}>Views: {item.views}</Text>
+                <Text style={styles.timestamp}>
+                  Created: {new Date(item.created_at).toLocaleString()}
+                </Text>
+                <Text style={styles.timestamp}>
+                  Updated: {new Date(item.updated_at).toLocaleString()}
+                </Text>
+              </View>
+
+              {/* Like Button */}
+              <TouchableOpacity style={styles.likeButton}
+                onPress={() => handleLikePost(item.id)}>
+                <Text style={styles.likeButtonText}>
+                  {item.is_liked ? '❤' : '🤍'} {item.likes_count}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Comment Section */}
+              <View style={styles.commentSection}>
+                <Text style={styles.commentTitle}>Comments:</Text>
+                {item.comments && item.comments.length > 0 ? (
+                  item.comments.map((comment, index) => (
+                    <View key={index} style={styles.comment}>
+                      <Text style={styles.commentAuthor}>
+                        {comment.user.username}
+                      </Text>
+                      <Text style={styles.commentText}>{comment.content}</Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noCommentsText}>No comments yet.</Text>
+                )}
+
+                {/* Add Comment Input */}
+                <View style={styles.addComment}>
+                  <TextInput
+                    style={styles.commentInput}
+                    placeholder="Add a comment..."
+                    value={newComment.postId === item.id ? newComment.text : ''}
+                    onChangeText={(text) =>
+                      setNewComment({ postId: item.id, text })
+                    }
+                  />
+                  <TouchableOpacity
+                    style={styles.commentSubmitButton}
+                    onPress={() => handleAddComment(item.id)}
+                  >
+                    <Text style={styles.commentSubmitButtonText}>Post</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           )}
         />
@@ -115,10 +245,96 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 10,
   },
+  mediaContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  mediaImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  metaInfo: {
+    marginBottom: 10,
+  },
+  metaText: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 5,
+  },
   timestamp: {
     fontSize: 12,
     color: '#999',
-    textAlign: 'right',
+    marginBottom: 5,
+  },
+  likeButton: {
+    alignSelf: 'flex-start',
+    paddingLeft: 10,
+    paddingTop: 8,
+    paddingRight: 10,
+    paddingBottom: 8,
+    borderRadius: 5,
+    backgroundColor: '#e0f7fa', // Light blue background
+    marginBottom: 10,
+    fontSize: 14,
+  },
+  likeButtonText: {
+    fontSize: 14,
+    color: '#00796b', // Dark teal color
+  },
+  commentSection: {
+    marginTop: 10,
+  },
+  commentTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  comment: {
+    marginBottom: 10,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  noCommentsText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  addComment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  commentInput: {
+    flex: 1,
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginRight: 10,
+  },
+  commentSubmitButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    backgroundColor: '#3b82f6',
+    borderRadius: 5,
+  },
+  commentSubmitButtonText: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   loadingText: {
     fontSize: 16,

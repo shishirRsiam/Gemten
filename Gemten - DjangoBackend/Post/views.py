@@ -5,7 +5,7 @@ from .models import Post, Comment, PostMedia
 from .serializers import PostSerializer, CommentSerializer
 
 class PostAPIView(APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, post_id=None):
         if post_id:
@@ -14,7 +14,7 @@ class PostAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -85,7 +85,7 @@ class LikePostAPIView(APIView):
     def post(self, request, post_id):
         post = Post.objects.get(id=post_id)
         user = request.user
-
+        print('All likes ==>', post.likes.all())
         if user in post.likes.all():
             post.likes.remove(user)  # Unlike
             liked = False

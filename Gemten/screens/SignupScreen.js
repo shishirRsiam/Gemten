@@ -38,14 +38,10 @@ const SignupScreen = ({ navigation, onSignup }) => {
       date_of_birth: dob,
       gender,
     };
-    // Simulate successful signup
 
-    console.log('User data:', userData);
 
     try {
-      const response = await axios.post(Api.register, userData);
-      console.log('Signup Response:', response.data);
-      
+      const response = await axios.post(Api.register, userData);      
     } catch (error) {
       Alert.alert('Error', `Signup failed: ${error.response.data.title}`);
       return;

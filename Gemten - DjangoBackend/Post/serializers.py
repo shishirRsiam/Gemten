@@ -21,11 +21,23 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  
+    is_liked = serializers.SerializerMethodField()  
+    likes_count = serializers.SerializerMethodField()  
     media = PostMediaSerializer(many=True, required=False)
-
+    comments = CommentSerializer(many=True, required=False)
     class Meta:
         model = Post
         fields = '__all__'
         read_only_fields = ['user', 'created_at', 'updated_at']
 
+    def get_likes_count(self, obj):
+        obj.views += 1
+        obj.save()
+        return obj.likes.count()
     
+    
+    def get_is_liked(self, obj):
+        user = self.context['request'].user
+        if user:
+            return obj.likes.filter(id=user.id).exists()
+        return False
