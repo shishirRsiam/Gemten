@@ -8,24 +8,21 @@ SECRET_KEY = credentials.SECRET_KEY
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', '192.168.0.101']
 
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework', 'rest_framework.authtoken', 'corsheaders',
+    'rest_framework', 'rest_framework.authtoken', 
     'Authentication', 'Email_Sent', 'Post', 'Connect',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000", 
-    "http://localhost:3000", 
-]
 
 CORS_ALLOW_CREDENTIALS = True  # If using authentication
 
@@ -123,3 +120,16 @@ EMAIL_USE_TLS = credentials.EMAIL_USE_TLS
 
 EMAIL_HOST_USER = credentials.EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = credentials.EMAIL_HOST_PASSWORD
+
+
+
+
+# Allow all origins for now (change in production)
+CORS_ALLOW_ALL_ORIGINS = True  
+
+# Or allow specific origins
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:19006",  # Expo
+#     "http://10.0.2.2:8000",  # Android Emulator
+#     "http://192.168.1.100:8000",  # Physical device (change IP)
+# ]

@@ -1,10 +1,10 @@
-def get_successful_login_response(user_serializer, token):
+def get_successful_login_response(userinfo_serializer, token):
     response = {
         "status": True,
         "title": "Login successful",
         "message": "You are now logged in",
         "token": f'Token {token.key}',
-        'user': user_serializer.data,
+        'user_info': userinfo_serializer.data,
     }
     return response
 
@@ -79,7 +79,7 @@ def get_use_creation_response(user_profile_serializer):
 def get_user_profile_response(user_profile_serializer, friends_serializer=None):
     response = {
         "status": True,
-        "user_profile": user_profile_serializer.data,
+        "user_info": user_profile_serializer.data,
         'friends': friends_serializer.data
     }
     return response

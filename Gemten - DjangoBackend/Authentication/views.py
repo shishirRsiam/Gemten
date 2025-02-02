@@ -13,6 +13,8 @@ from django.contrib.auth.tokens import default_token_generator
 
 class UserViewSet(APIView):
     def get(self, request, profile_id=None):
+        print('($)'*30)
+        print('request.user ==>', request.user)
         all_user = request.query_params.get("all_user", None)
         if all_user:
             user_profile_serializer = UserProfileSerializer(UserProfile.objects.all(), many=True)
@@ -72,7 +74,7 @@ class UserViewSet(APIView):
         user = User.objects.create_user(
             first_name=first_name, last_name=last_name,
             username=username, password=password,
-            email=email, is_active=False,
+            email=email, is_active=True,
         )
         user.save()
 
@@ -120,8 +122,8 @@ class LoginApiView(APIView):
                 return Response(response, status=400)
             
             token, _ = Token.objects.get_or_create(user=user) 
-            user_serializer = UserSerializer(user)
-            response = get_successful_login_response(user_serializer, token)
+            userinfo_serializer = UserProfileSerializer(user.userprofile)
+            response = get_successful_login_response(userinfo_serializer, token)
             return Response(response, status=200)
         
         response = get_failed_login_response()
