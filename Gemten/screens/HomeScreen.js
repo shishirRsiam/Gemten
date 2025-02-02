@@ -11,35 +11,43 @@ import {
   Image,
   Modal,
   Keyboard,
+  Button,
 } from 'react-native';
 import axios from 'axios';
 import Api from '../services/Api';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useFocusEffect } from '@react-navigation/native';
+
 const HomeScreen = () => {
+  const navigation = useNavigation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newComment, setNewComment] = useState({ post: null, content: '' });
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(Api.get_posts, {
-          headers: {
-            Authorization: await AsyncStorage.getItem('authToken'),
-          },
-        });
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Error fetching posts:', error.message || error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPosts();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchPosts = async () => {
+        try {
+          const token = await AsyncStorage.getItem('authToken');
+          const response = await axios.get(Api.get_posts, {
+            headers: {
+              Authorization: `${token}`,
+            },
+          });
+          setPosts(response.data);
+        } catch (error) {
+          console.error('Error fetching posts:', error.message || error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchPosts();
+    }, [])
+  );
 
   const handleLikePost = async (postId) => {
     try {
@@ -86,9 +94,9 @@ const HomeScreen = () => {
         prevPosts.map((post) =>
           post.id === selectedPost.id
             ? {
-                ...post,
-                comments: [...(post.comments || []), response.data],
-              }
+              ...post,
+              comments: [...(post.comments || []), response.data],
+            }
             : post
         )
       );
