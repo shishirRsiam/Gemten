@@ -10,7 +10,7 @@ class PostAPIView(APIView):
     def get(self, request, post_id=None):
         if post_id:
             post = Post.objects.get(id=post_id)
-            serializer = PostSerializer(post)
+            serializer = PostSerializer(post, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         posts = Post.objects.all()
@@ -56,7 +56,7 @@ class CommentAPIView(APIView):
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, post_id):
+    def post(self, request, post_id=None):
         serializer = CommentSerializer(data=request.data, context={'request': request})
         
         if serializer.is_valid():
@@ -85,7 +85,6 @@ class LikePostAPIView(APIView):
     def post(self, request, post_id):
         post = Post.objects.get(id=post_id)
         user = request.user
-        print('All likes ==>', post.likes.all())
         if user in post.likes.all():
             post.likes.remove(user)  # Unlike
             liked = False

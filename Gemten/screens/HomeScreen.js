@@ -9,17 +9,20 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  Modal,
+  Keyboard,
 } from 'react-native';
 import axios from 'axios';
 import Api from '../services/Api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newComment, setNewComment] = useState({ postId: null, text: '' });
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newComment, setNewComment] = useState({ post: null, content: '' });
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -35,7 +38,6 @@ const HomeScreen = () => {
         setLoading(false);
       }
     };
-
     fetchPosts();
   }, []);
 
@@ -45,15 +47,16 @@ const HomeScreen = () => {
         prevPosts.map((post) =>
           post.id === postId
             ? {
-              ...post, is_liked: !post.is_liked,
+              ...post,
+              is_liked: !post.is_liked,
               likes_count: post.is_liked ? post.likes_count - 1 : post.likes_count + 1,
             }
             : post
         )
       );
-      
+
       const api = `${Api.like_post}/${postId}/like/`;
-      const response = await axios.post(api, {}, {
+      await axios.post(api, {}, {
         headers: {
           Authorization: await AsyncStorage.getItem('authToken'),
         },
@@ -64,33 +67,51 @@ const HomeScreen = () => {
     }
   };
 
-  const handleAddComment = async (postId) => {
+  const handleAddComment = async () => {
+    Keyboard.dismiss()
     try {
-      if (!newComment.text.trim()) {
+      if (!newComment.content.trim()) {
         alert('Comment cannot be empty');
         return;
       }
 
-      const response = await axios.post(`${Api.add_comment}/${postId}/`, {
-        content: newComment.text,
+      const api = `${Api.add_comment}/`;
+      const response = await axios.post(api, newComment, {
+        headers: {
+          Authorization: await AsyncStorage.getItem('authToken'),
+        },
       });
 
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
-          post.id === postId
+          post.id === selectedPost.id
             ? {
-              ...post,
-              comments: [...(post.comments || []), response.data],
-            }
+                ...post,
+                comments: [...(post.comments || []), response.data],
+              }
             : post
         )
       );
+      setSelectedPost((prev) => ({
+        ...prev,
+        comments: [...(prev.comments || []), response.data],
+      }));
 
-      setNewComment({ postId: null, text: '' });
+      setNewComment({ post: null, content: '' });
     } catch (error) {
       console.error('Error adding comment:', error.message || error);
       alert('Failed to add comment. Please try again.');
     }
+  };
+
+  const openCommentModal = (post) => {
+    setSelectedPost(post);
+    setIsModalVisible(true);
+  };
+
+  const closeCommentModal = () => {
+    setSelectedPost(null);
+    setIsModalVisible(false);
   };
 
   if (loading) {
@@ -104,7 +125,7 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Social Media Feed</Text>
+      <Text style={styles.title}>Gemten Feed</Text>
 
       {posts.length > 0 ? (
         <FlatList
@@ -114,7 +135,7 @@ const HomeScreen = () => {
             <View style={styles.postCard}>
               {/* User Info Section */}
               <View style={styles.userInfo}>
-                <Text style={styles.username}>{item.user.username}</Text>
+                <Text style={styles.username}>@{item.user.username}</Text>
                 <Text style={styles.fullName}>
                   {item.user.first_name} {item.user.last_name}
                 </Text>
@@ -142,52 +163,26 @@ const HomeScreen = () => {
                 <Text style={styles.timestamp}>
                   Created: {new Date(item.created_at).toLocaleString()}
                 </Text>
-                <Text style={styles.timestamp}>
+                {/* <Text style={styles.timestamp}>
                   Updated: {new Date(item.updated_at).toLocaleString()}
-                </Text>
+                </Text> */}
               </View>
 
-              {/* Like Button */}
-              <TouchableOpacity style={styles.likeButton}
-                onPress={() => handleLikePost(item.id)}>
-                <Text style={styles.likeButtonText}>
-                  {item.is_liked ? '❤' : '🤍'} {item.likes_count}
-                </Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                {/* Like Button */}
+                <TouchableOpacity style={styles.likeButton} onPress={() => handleLikePost(item.id)}>
+                  <Text style={styles.likeButtonText}>
+                    {item.is_liked ? '❤' : '🤍'} {item.likes_count}
+                  </Text>
+                </TouchableOpacity>
 
-              {/* Comment Section */}
-              <View style={styles.commentSection}>
-                <Text style={styles.commentTitle}>Comments:</Text>
-                {item.comments && item.comments.length > 0 ? (
-                  item.comments.map((comment, index) => (
-                    <View key={index} style={styles.comment}>
-                      <Text style={styles.commentAuthor}>
-                        {comment.user.username}
-                      </Text>
-                      <Text style={styles.commentText}>{comment.content}</Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.noCommentsText}>No comments yet.</Text>
-                )}
+                {/* Comment Box */}
+                <TouchableOpacity style={styles.commentBox} onPress={() => openCommentModal(item)}>
+                  <Text style={styles.commentCount}>
+                    💬 {item.comments?.length || 0} Comments
+                  </Text>
+                </TouchableOpacity>
 
-                {/* Add Comment Input */}
-                <View style={styles.addComment}>
-                  <TextInput
-                    style={styles.commentInput}
-                    placeholder="Add a comment..."
-                    value={newComment.postId === item.id ? newComment.text : ''}
-                    onChangeText={(text) =>
-                      setNewComment({ postId: item.id, text })
-                    }
-                  />
-                  <TouchableOpacity
-                    style={styles.commentSubmitButton}
-                    onPress={() => handleAddComment(item.id)}
-                  >
-                    <Text style={styles.commentSubmitButtonText}>Post</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
             </View>
           )}
@@ -195,6 +190,57 @@ const HomeScreen = () => {
       ) : (
         <Text style={styles.noPostsText}>No posts available.</Text>
       )}
+
+      {/* Comment Modal */}
+      <Modal visible={isModalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Comments ({selectedPost?.comments?.length || 0})</Text>
+
+            {/* Display Existing Comments */}
+            {selectedPost?.comments && selectedPost.comments.length > 0 ? (
+              <FlatList
+                data={selectedPost.comments}
+                keyExtractor={(comment) => comment.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.comment}>
+                    <Text style={styles.commentAuthor}>
+                      @{item.user.username}
+                    </Text>
+                    <Text style={styles.commentText}>{item.content}</Text>
+                  </View>
+                )}
+              />
+            ) : (
+              <Text style={styles.noCommentsText}>No comments yet.</Text>
+            )}
+
+            {/* Add Comment Input */}
+            <View style={styles.addComment}>
+              <TextInput style={styles.commentInput}
+                placeholder="Add a comment..."
+                value={newComment.post === selectedPost?.id ? newComment.content : ''}
+                onChangeText={(content) =>
+                  setNewComment({ post: selectedPost?.id, content })
+                }
+              />
+              <TouchableOpacity
+                style={styles.commentSubmitButton}
+                onPress={handleAddComment}>
+                <Text style={styles.commentSubmitButtonText} >Post</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Close Modal Button */}
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={closeCommentModal}
+            >
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -272,27 +318,45 @@ const styles = StyleSheet.create({
   },
   likeButton: {
     alignSelf: 'flex-start',
-    paddingLeft: 10,
-    paddingTop: 8,
-    paddingRight: 10,
-    paddingBottom: 8,
+    padding: 10,
     borderRadius: 5,
     backgroundColor: '#e0f7fa', // Light blue background
     marginBottom: 10,
-    fontSize: 14,
   },
   likeButtonText: {
     fontSize: 14,
     color: '#00796b', // Dark teal color
   },
-  commentSection: {
-    marginTop: 10,
+  commentBox: {
+    alignSelf: 'flex-start',
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#e0f7fa', // Light blue background
+    marginBottom: 10,
   },
-  commentTitle: {
-    fontSize: 16,
+  commentCount: {
+    fontSize: 14,
+    color: '#00796b', // Dark teal color
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
+    marginBottom: 15,
+    textAlign: 'center',
   },
   comment: {
     marginBottom: 10,
@@ -310,6 +374,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 10,
   },
   addComment: {
     flexDirection: 'row',
@@ -335,6 +401,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  closeModalButton: {
+    alignSelf: 'center',
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#e0f7fa',
+    borderRadius: 5,
+  },
+  closeModalButtonText: {
+    fontSize: 14,
+    color: '#00796b',
   },
   loadingText: {
     fontSize: 16,
