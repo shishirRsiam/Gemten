@@ -9,17 +9,11 @@ from .serializers import FriendRequestSerializer, FriendshipSerializer
 
 class SendFriendRequestView(APIView):
     def post(self, request, user_id):
-        print('5=7'*30)
-
         sender = request.user
         receiver = get_object_or_404(User, id=user_id)
-        print('sender ==>', sender)
-        print('receiver ==>', receiver)
 
         friend_request = FriendRequest.objects.create(sender=sender, receiver=receiver)
-        # print('friend_request ==>', friend_request)
         return Response(FriendRequestSerializer(friend_request).data, status=status.HTTP_201_CREATED)
-        # return Response({"message": "Friend request sent!"}, status=status.HTTP_201_CREATED)
 
 
 class AcceptFriendRequestView(APIView):

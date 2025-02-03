@@ -76,14 +76,13 @@ def get_use_creation_response(user_profile_serializer):
     return response
 
 
-def get_user_profile_response(user_profile_serializer, post_serializer=None, friends_serializer=None):
+def get_user_profile_response(user_profile_serializer, post_serializer, friends_serializer):
     response = {
         "status": True,
-        'posts': post_serializer.data,
         "user_info": user_profile_serializer.data,
+        "posts": post_serializer.data,
+        "friends": friends_serializer.data
     }
-    if friends_serializer:
-        response['friends'] = friends_serializer.data
     return response
 
 

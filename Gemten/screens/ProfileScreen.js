@@ -18,14 +18,17 @@ const ProfileScreen = () => {
   const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
+    console.log('Fetching user profile...');
     const fetchUserProfile = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
+        console.log(token);
         const response = await axios.get(Api.get_auth_profile, {
           headers: {
             Authorization: `${token}`,
           },
         });
+        console.log(response.data);
         setUserProfile(response.data.user_info);
       } catch (error) {
         console.error('Error fetching user profile:', error.message || error);

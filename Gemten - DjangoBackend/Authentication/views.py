@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSerializer, UserProfileSerializer
 from django.contrib.auth.tokens import default_token_generator
 from Post.serializers import PostSerializer
+from Connect.serializers import FriendshipSerializer
 
 class UserViewSet(APIView):
     def get(self, request, profile_id=None):
@@ -19,16 +20,11 @@ class UserViewSet(APIView):
             return Response({"status": True, "all_user": user_profile_serializer.data})
         
         if profile_id:
-            print('($)'*30)
             request_user = request.user
             viewed_profile = User.objects.get(id=profile_id)
             user_profile_serializer = UserProfileSerializer(viewed_profile.userprofile)
-            print('profile_id ==>', profile_id)
-            print('request_user ==>', request_user)
-            print('viewed_profile ==>', viewed_profile)
 
-            auth, friends, request_sent, request_received = False, False, False, False
-
+            friends, request_sent, request_received = False, False, False
             if request_user == viewed_profile:
                 return Response({"status": True, "auth": True})
             
@@ -40,12 +36,11 @@ class UserViewSet(APIView):
                 request_received = True
 
             post_serializer = PostSerializer(viewed_profile.posts.all(), many=True, context={'request': request})
-            response = get_viewed_profile_response(user_profile_serializer, auth=auth, friends=friends, request_sent=request_sent, request_received=request_received)
-            print('response ==>', response)
+            response = get_viewed_profile_response(user_profile_serializer, friends=friends, request_sent=request_sent, request_received=request_received)
             return Response(response)
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
-        friends_serializer = UserProfileSerializer(self.get_friends(request.user), many=True)
+        friends_serializer = FriendshipSerializer(self.get_friends(request.user), many=True)
         post_serializer = PostSerializer(request.user.posts.all(), many=True, context={'request': request})
         response = get_user_profile_response(user_profile_serializer, post_serializer, friends_serializer)
         return Response(response)
@@ -103,7 +98,6 @@ class UserViewSet(APIView):
     def get_friends(self, user):
         friendships = Friendship.objects.filter(user1=user) | Friendship.objects.filter(user2=user)
         friends = [friendship.user1 if friendship.user2 == user else friendship.user2 for friendship in friendships]
-        print(friends)
         return friends
 
 class EmailVerifyAPIView(APIView):

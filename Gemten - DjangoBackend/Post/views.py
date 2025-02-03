@@ -65,7 +65,6 @@ class CommentAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, post_id, comment_id):
-        print(comment_id)
         comment = Comment.objects.get(id=comment_id)
         comment.delete()
         return Response({"message": "Comment deleted successfully"}, status=status.HTTP_200_OK)
