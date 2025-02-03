@@ -5,7 +5,6 @@ const Api = {
     get_posts: `${baseUrl}/posts/`,  
     add_post: `${baseUrl}/posts/`,  
     get_users: `${baseUrl}/users/`,
-    get_authors: `${baseUrl}/auth/`, 
     login: `${baseUrl}/login/`, 
     register: `${baseUrl}/user/`,
     get_auth_profile: `${baseUrl}/auth/`, // Get the authenticated user's profile

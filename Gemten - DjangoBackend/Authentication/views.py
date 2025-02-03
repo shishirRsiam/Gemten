@@ -9,7 +9,7 @@ from django.utils.http import urlsafe_base64_decode
 from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSerializer, UserProfileSerializer
 from django.contrib.auth.tokens import default_token_generator
-
+from Post.serializers import PostSerializer
 
 class UserViewSet(APIView):
     def get(self, request, profile_id=None):
@@ -27,7 +27,8 @@ class UserViewSet(APIView):
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
         friends_serializer = UserProfileSerializer(self.get_friends(request.user), many=True)
-        response = get_user_profile_response(user_profile_serializer, friends_serializer)
+        post_serializer = PostSerializer(request.user.posts.all(), many=True, context={'request': request})
+        response = get_user_profile_response(user_profile_serializer, post_serializer, friends_serializer)
         return Response(response)
     
     def post(self, request):
