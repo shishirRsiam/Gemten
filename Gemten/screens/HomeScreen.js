@@ -1,4 +1,3 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import {
   Text,
@@ -11,14 +10,14 @@ import {
   Image,
   Modal,
   Keyboard,
-  Button,
+  ScrollView,
 } from 'react-native';
 import axios from 'axios';
 import Api from '../services/Api';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { useFocusEffect } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons'; // For icons
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -76,7 +75,7 @@ const HomeScreen = () => {
   };
 
   const handleAddComment = async () => {
-    Keyboard.dismiss()
+    Keyboard.dismiss();
     try {
       if (!newComment.content.trim()) {
         alert('Comment cannot be empty');
@@ -124,7 +123,7 @@ const HomeScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#3b82f6" />
         <Text style={styles.loadingText}>Loading posts...</Text>
       </View>
@@ -133,8 +132,12 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Gemten Feed</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Gemten Feed</Text>
+      </View>
 
+      {/* Posts List */}
       {posts.length > 0 ? (
         <FlatList
           data={posts}
@@ -143,18 +146,27 @@ const HomeScreen = () => {
             <View style={styles.postCard}>
               {/* User Info Section */}
               <View style={styles.userInfo}>
-                <Text style={styles.username}>@{item.user.username}</Text>
-                <Text style={styles.fullName}>
-                  {item.user.first_name} {item.user.last_name}
-                </Text>
+                <Image
+                  source={{ uri: item.user.profile_pic || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png' }}
+                  style={styles.profilePic}
+                />
+                <View style={styles.userDetails}>
+                  <Text style={styles.username}>
+                    @{item.user.username} 
+                  </Text>
+                  <Text style={styles.fullName}>
+                    {item.views} views • {new Date(item.created_at).toLocaleString()}
+                  </Text>
+                </View>
               </View>
+
 
               {/* Post Content */}
               <Text style={styles.postContent}>{item.content}</Text>
 
               {/* Media Section */}
               {item.media && item.media.length > 0 ? (
-                <View style={styles.mediaContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {item.media.map((mediaItem, index) => (
                     <Image
                       key={index}
@@ -162,35 +174,30 @@ const HomeScreen = () => {
                       style={styles.mediaImage}
                     />
                   ))}
-                </View>
+                </ScrollView>
               ) : null}
 
-              {/* Views, Timestamp, and Likes */}
-              <View style={styles.metaInfo}>
-                <Text style={styles.metaText}>Views: {item.views}</Text>
-                <Text style={styles.timestamp}>
-                  Created: {new Date(item.created_at).toLocaleString()}
-                </Text>
-                {/* <Text style={styles.timestamp}>
-                  Updated: {new Date(item.updated_at).toLocaleString()}
-                </Text> */}
-              </View>
-
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                {/* Like Button */}
-                <TouchableOpacity style={styles.likeButton} onPress={() => handleLikePost(item.id)}>
-                  <Text style={styles.likeButtonText}>
-                    {item.is_liked ? '❤' : '🤍'} {item.likes_count}
-                  </Text>
+              {/* Post Actions */}
+              <View style={styles.postActions}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => handleLikePost(item.id)}
+                >
+                  <Icon
+                    name={item.is_liked ? 'heart' : 'heart-outline'}
+                    size={24}
+                    color={item.is_liked ? '#ff4444' : '#333'}
+                  />
+                  <Text style={styles.actionText}>{item.likes_count}</Text>
                 </TouchableOpacity>
 
-                {/* Comment Box */}
-                <TouchableOpacity style={styles.commentBox} onPress={() => openCommentModal(item)}>
-                  <Text style={styles.commentCount}>
-                    💬 {item.comments?.length || 0} Comments
-                  </Text>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={() => openCommentModal(item)}
+                >
+                  <Icon name="chatbubble-outline" size={24} color="#333" />
+                  <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
                 </TouchableOpacity>
-
               </View>
             </View>
           )}
@@ -212,10 +219,14 @@ const HomeScreen = () => {
                 keyExtractor={(comment) => comment.id.toString()}
                 renderItem={({ item }) => (
                   <View style={styles.comment}>
-                    <Text style={styles.commentAuthor}>
-                      @{item.user.username}
-                    </Text>
-                    <Text style={styles.commentText}>{item.content}</Text>
+                    <Image
+                      source={{ uri: item.user.profile_pic || 'https://via.placeholder.com/150' }}
+                      style={styles.commentProfilePic}
+                    />
+                    <View style={styles.commentContent}>
+                      <Text style={styles.commentAuthor}>@{item.user.username}</Text>
+                      <Text style={styles.commentText}>{item.content}</Text>
+                    </View>
                   </View>
                 )}
               />
@@ -225,7 +236,8 @@ const HomeScreen = () => {
 
             {/* Add Comment Input */}
             <View style={styles.addComment}>
-              <TextInput style={styles.commentInput}
+              <TextInput
+                style={styles.commentInput}
                 placeholder="Add a comment..."
                 value={newComment.post === selectedPost?.id ? newComment.content : ''}
                 onChangeText={(content) =>
@@ -234,8 +246,9 @@ const HomeScreen = () => {
               />
               <TouchableOpacity
                 style={styles.commentSubmitButton}
-                onPress={handleAddComment}>
-                <Text style={styles.commentSubmitButtonText} >Post</Text>
+                onPress={handleAddComment}
+              >
+                <Text style={styles.commentSubmitButtonText}>Post</Text>
               </TouchableOpacity>
             </View>
 
@@ -258,37 +271,50 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb', // Light gray background
-    padding: 20,
+    backgroundColor: '#f9fafb',
   },
-  title: {
-    fontSize: 28,
+  header: {
+    padding: 20,
+    backgroundColor: '#3b82f6',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 5,
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#3b82f6', // Blue color
-    marginBottom: 20,
+    color: '#fff',
     textAlign: 'center',
   },
   postCard: {
-    backgroundColor: '#ffffff', // White background for cards
-    borderRadius: 10,
+    backgroundColor: '#fff',
+    borderRadius: 15,
     padding: 15,
-    marginBottom: 15,
+    margin: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    elevation: 3, // For Android shadow
+    elevation: 3,
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
   },
+  profilePic: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  userDetails: {
+    flexDirection: 'column',
+  },
   username: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginRight: 10,
   },
   fullName: {
     fontSize: 14,
@@ -299,63 +325,36 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 10,
   },
-  mediaContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 10,
-  },
   mediaImage: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     borderRadius: 10,
     marginRight: 10,
-    marginBottom: 10,
   },
-  metaInfo: {
-    marginBottom: 10,
+  postActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
   },
-  metaText: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 5,
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  timestamp: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 5,
-  },
-  likeButton: {
-    alignSelf: 'flex-start',
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#e0f7fa', // Light blue background
-    marginBottom: 10,
-  },
-  likeButtonText: {
+  actionText: {
     fontSize: 14,
-    color: '#00796b', // Dark teal color
-  },
-  commentBox: {
-    alignSelf: 'flex-start',
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#e0f7fa', // Light blue background
-    marginBottom: 10,
-  },
-  commentCount: {
-    fontSize: 14,
-    color: '#00796b', // Dark teal color
+    color: '#333',
+    marginLeft: 5,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: '90%',
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 20,
     maxHeight: '80%',
   },
@@ -367,7 +366,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   comment: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
+  },
+  commentProfilePic: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  commentContent: {
+    flex: 1,
   },
   commentAuthor: {
     fontSize: 14,
@@ -395,15 +405,15 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderRadius: 20,
+    paddingHorizontal: 15,
     marginRight: 10,
   },
   commentSubmitButton: {
     paddingVertical: 8,
     paddingHorizontal: 15,
     backgroundColor: '#3b82f6',
-    borderRadius: 5,
+    borderRadius: 20,
   },
   commentSubmitButtonText: {
     fontSize: 14,
@@ -415,16 +425,20 @@ const styles = StyleSheet.create({
     marginTop: 15,
     padding: 10,
     backgroundColor: '#e0f7fa',
-    borderRadius: 5,
+    borderRadius: 20,
   },
   closeModalButtonText: {
     fontSize: 14,
     color: '#00796b',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   loadingText: {
     fontSize: 16,
     color: '#999',
-    textAlign: 'center',
     marginTop: 10,
   },
   noPostsText: {
