@@ -151,9 +151,13 @@ const HomeScreen = () => {
                   style={styles.profilePic}
                 />
                 <View style={styles.userDetails}>
-                  <Text style={styles.username}>
-                    @{item.user.username} 
-                  </Text>
+                  <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { id: item.user.id });}}>
+                    <Text style={styles.username}>
+                      @{item.user.username}
+                    </Text>
+                  </TouchableOpacity>
+
+
                   <Text style={styles.fullName}>
                     {item.views} views • {new Date(item.created_at).toLocaleString()}
                   </Text>
@@ -179,15 +183,8 @@ const HomeScreen = () => {
 
               {/* Post Actions */}
               <View style={styles.postActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleLikePost(item.id)}
-                >
-                  <Icon
-                    name={item.is_liked ? 'heart' : 'heart-outline'}
-                    size={24}
-                    color={item.is_liked ? '#ff4444' : '#333'}
-                  />
+                <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
+                  <Icon name={item.is_liked ? 'heart' : 'heart-outline'} size={24} color={item.is_liked ? '#ff4444' : '#333'}/>
                   <Text style={styles.actionText}>{item.likes_count}</Text>
                 </TouchableOpacity>
 

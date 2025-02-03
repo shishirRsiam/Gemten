@@ -80,7 +80,8 @@ def get_user_profile_response(user_profile_serializer, post_serializer=None, fri
     response = {
         "status": True,
         'posts': post_serializer.data,
-        'friends': friends_serializer.data,
         "user_info": user_profile_serializer.data,
     }
+    if friends_serializer:
+        response['friends'] = friends_serializer.data
     return response

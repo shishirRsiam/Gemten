@@ -13,17 +13,18 @@ from Post.serializers import PostSerializer
 
 class UserViewSet(APIView):
     def get(self, request, profile_id=None):
-        print('($)'*30)
-        print('request.user ==>', request.user)
         all_user = request.query_params.get("all_user", None)
         if all_user:
             user_profile_serializer = UserProfileSerializer(UserProfile.objects.all(), many=True)
             return Response({"status": True, "all_user": user_profile_serializer.data})
         
         if profile_id:
-            user_profile = UserProfile.objects.get(id=profile_id)
-            user_profile_serializer = UserProfileSerializer(user_profile)
-            return Response({"user_profile": user_profile_serializer.data})
+            print('($)'*30)
+            print('profile_id ==>', profile_id)
+            user = User.objects.get(id=profile_id)
+            user_profile_serializer = UserProfileSerializer(user.userprofile)
+            # respose = get_user_profile_response(user_profile_serializer)
+            return Response({"status": True, "user_profile": user_profile_serializer.data})
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
         friends_serializer = UserProfileSerializer(self.get_friends(request.user), many=True)

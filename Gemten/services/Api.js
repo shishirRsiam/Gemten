@@ -3,6 +3,7 @@ let baseUrl = 'http://192.168.0.101:8000/api';
 const Api = {
     baseUrl: baseUrl,
     get_posts: `${baseUrl}/posts/`,  
+    get_other_profile: `${baseUrl}/user`,  
     add_post: `${baseUrl}/posts/`,  
     get_users: `${baseUrl}/users/`,
     login: `${baseUrl}/login/`, 
