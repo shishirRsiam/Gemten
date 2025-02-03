@@ -12,9 +12,6 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         model = FriendRequest
         fields = '__all__'
 
-    def create(self, validated_data):
-        return FriendRequest.objects.create(**validated_data)
-
 class FriendshipSerializer(serializers.ModelSerializer):
     user1 = UserSerializer(read_only=True)
     user2 = UserSerializer(read_only=True)

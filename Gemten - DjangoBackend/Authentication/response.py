@@ -85,3 +85,15 @@ def get_user_profile_response(user_profile_serializer, post_serializer=None, fri
     if friends_serializer:
         response['friends'] = friends_serializer.data
     return response
+
+
+def get_viewed_profile_response(user_profile_serializer, auth=False, friends=False, request_sent=False, request_received=False):
+    response = {
+        "status": True,
+        "user_profile": user_profile_serializer.data,
+        "auth": auth,
+        "friends": friends,
+        "request_sent": request_sent,
+        "request_received": request_received,
+    }
+    return response

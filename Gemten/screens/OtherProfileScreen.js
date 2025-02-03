@@ -13,6 +13,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import Api from '../services/Api';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const { width, height } = Dimensions.get('window');
 
 const UserProfileScreen = ({ route }) => {
@@ -20,17 +22,23 @@ const UserProfileScreen = ({ route }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+
+    const fetchUserData = async () => {
+        try {
+            const response = await axios.get(`${Api.get_other_profile}/${id}`,{
+                headers: {
+                    Authorization: await AsyncStorage.getItem('authToken'),
+                },
+            });
+            setUser(response.data.user_profile);
+        } catch (error) {
+            console.error('Error fetching user data:', error.response?.data || error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await axios.get(`${Api.get_other_profile}/${id}`);
-                setUser(response.data.user_profile);
-            } catch (error) {
-                console.error('Error fetching user data:', error.response?.data || error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchUserData();
     }, [id]);
 

@@ -1,5 +1,5 @@
 from .response import *
-from Connect.models import Friendship
+from Connect.models import Friendship, FriendRequest
 from . models import UserProfile, User
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,11 +20,29 @@ class UserViewSet(APIView):
         
         if profile_id:
             print('($)'*30)
+            request_user = request.user
+            viewed_profile = User.objects.get(id=profile_id)
+            user_profile_serializer = UserProfileSerializer(viewed_profile.userprofile)
             print('profile_id ==>', profile_id)
-            user = User.objects.get(id=profile_id)
-            user_profile_serializer = UserProfileSerializer(user.userprofile)
-            # respose = get_user_profile_response(user_profile_serializer)
-            return Response({"status": True, "user_profile": user_profile_serializer.data})
+            print('request_user ==>', request_user)
+            print('viewed_profile ==>', viewed_profile)
+
+            auth, friends, request_sent, request_received = False, False, False, False
+
+            if request_user == viewed_profile:
+                return Response({"status": True, "auth": True})
+            
+            if Friendship.objects.filter(user1=request_user, user2=viewed_profile).exists() or Friendship.objects.filter(user1=viewed_profile, user2=request_user).exists():
+                friends = True
+            elif FriendRequest.objects.filter(sender=request_user, receiver=viewed_profile).exists():
+                request_sent = True
+            elif FriendRequest.objects.filter(sender=viewed_profile, receiver=request_user).exists():
+                request_received = True
+
+            post_serializer = PostSerializer(viewed_profile.posts.all(), many=True, context={'request': request})
+            response = get_viewed_profile_response(user_profile_serializer, auth=auth, friends=friends, request_sent=request_sent, request_received=request_received)
+            print('response ==>', response)
+            return Response(response)
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
         friends_serializer = UserProfileSerializer(self.get_friends(request.user), many=True)
