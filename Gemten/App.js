@@ -14,6 +14,8 @@ import PostDetailsScreen from './screens/PostDetailsScreen';
 import AddPostScreen from './screens/AddPostScreen'; // New screen for adding posts
 import Icon from 'react-native-vector-icons/Ionicons'; // For icons
 import OtherProfileScreen from './screens/OtherProfileScreen';
+import ChatScreen from './screens/ChatScreen';
+import ConversationShowingScreen from './screens/ConversationScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -47,14 +49,16 @@ const AuthenticatedTabs = ({ setUser }) => {
               iconName = focused ? 'add-circle' : 'add-circle-outline';
             } else if (route.name === 'Logout') {
               iconName = focused ? 'log-out' : 'log-out-outline';
+            } else if (route.name === 'Message') {
+              iconName = focused ? 'chatbox' : 'chatbox-outline';
             }
 
             return <Icon name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: '#3b82f6', // Active tab color
-          tabBarInactiveTintColor: '#999', // Inactive tab color
+          tabBarActiveTintColor: '#3b82f6',
+          tabBarInactiveTintColor: '#999',
           tabBarStyle: {
-            backgroundColor: '#fff', // Background color of the tab bar
+            backgroundColor: '#fff',
             borderTopWidth: 1,
             borderTopColor: '#ddd',
           },
@@ -70,6 +74,11 @@ const AuthenticatedTabs = ({ setUser }) => {
           name="Add Post"
           component={AddPostScreen}
           options={{ title: 'Add Post', headerShown: false }}
+        />
+        <Tab.Screen
+          name="Message"
+          component={ConversationShowingScreen}
+          options={{ title: 'Message', headerShown: false }}
         />
         <Tab.Screen
           name="Profile"
@@ -119,6 +128,7 @@ const AuthenticatedScreens = ({ setUser }) => {
       </Stack.Screen>
       <Stack.Screen name="PostDetails" component={PostDetailsScreen} />
       <Stack.Screen name="OtherProfile" component={OtherProfileScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
     </Stack.Navigator>
   );
 }
