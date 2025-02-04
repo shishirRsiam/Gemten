@@ -74,20 +74,20 @@ const UserProfileScreen = ({ route }) => {
     // Handle friendship actions
     const handleFriendshipAction = async (action) => {
         try {
-            let api, newStatus;
+            let api, newStatus = 'not_friends';
 
             if (action === 'add_friend') {
                 api = `${Api.connect}/${id}/?sent_request=true`;
                 newStatus = 'request_sent';
             } else if (action === 'cancel_request') {
                 api = `${Api.connect}/${id}/?cancel_requst=true`;
-                newStatus = 'not_friends';
             } else if (action === 'accept_request') {
                 api = `${Api.connect}/${id}/?accept_request=true`;
                 newStatus = 'friends';
             } else if (action === 'reject_request') {
                 api = `${Api.connect}/${id}/?reject_request=true`;
-                newStatus = 'not_friends';
+            } else if (action === 'remove_friend') {
+                api = `${Api.connect}/${id}/?remove_friend=true`;
             }
 
             const response = await axios.post(api, {}, {
@@ -111,9 +111,15 @@ const UserProfileScreen = ({ route }) => {
         switch (friendshipStatus) {
             case 'friends':
                 return (
-                    <TouchableOpacity style={styles.friendButton}>
-                        <Text style={styles.friendButtonText}>Friends</Text>
-                    </TouchableOpacity>
+                    <>
+                        <TouchableOpacity style={styles.friendButton}>
+                            <Text style={styles.friendButtonText}>Friends</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.friendButton}
+                            onPress={() => handleFriendshipAction('remove_friend')}>
+                            <Text style={styles.friendButtonText}>Remove Friend</Text>
+                        </TouchableOpacity>
+                    </>
                 );
             case 'request_sent':
                 return (
