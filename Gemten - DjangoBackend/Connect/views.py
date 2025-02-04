@@ -33,7 +33,15 @@ class ConnectView(APIView):
             friend_request.reject()
             return Response({'message': 'Friend request rejected!'}, status=status.HTTP_200_OK)
         
-        return Response({'message': 'Invalid request! try with connect/<user_id>?<sent_request|cancel_requst|accept_request|reject_request>=true'})
+        remove_friend = request.query_params.get('remove_friend', None)
+        if remove_friend:
+            friendship = Friendship.objects.filter(user1=request.user, user2=viewed_user).first()
+            if not friendship:
+                friendship = Friendship.objects.filter(user1=viewed_user, user2=request.user).first()
+            friendship.delete()
+            return Response({'message': 'Friend removed!'}, status=status.HTTP_200_OK)
+            
+        return Response({'message': 'Invalid request! try with connect/<user_id>?<sent_request|cancel_requst|accept_request|reject_request|remove_friend>=true'})
 
 
 class FriendRequestListView(APIView):
