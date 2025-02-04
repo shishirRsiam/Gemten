@@ -130,6 +130,8 @@ const HomeScreen = () => {
     );
   }
 
+
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -151,9 +153,15 @@ const HomeScreen = () => {
                   style={styles.profilePic}
                 />
                 <View style={styles.userDetails}>
-                  <TouchableOpacity onPress={() => { navigation.navigate('OtherProfile', { id: item.user.id });}}>
+                  <TouchableOpacity onPress={async () => {
+                    const username = await AsyncStorage.getItem('userName')
+                    if (item.user.username == username) navigation.navigate('Profile')
+                    else navigation.navigate('OtherProfile', { id: item.user.id });
+                  }}>
                     <Text style={styles.username}>
-                      @{item.user.username}
+                      @{item.user.username} {item.user.username === 'shishir' && (
+                        <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
+                      )}
                     </Text>
                   </TouchableOpacity>
 
@@ -184,7 +192,7 @@ const HomeScreen = () => {
               {/* Post Actions */}
               <View style={styles.postActions}>
                 <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
-                  <Icon name={item.is_liked ? 'heart' : 'heart-outline'} size={24} color={item.is_liked ? '#ff4444' : '#333'}/>
+                  <Icon name={item.is_liked ? 'heart' : 'heart-outline'} size={24} color={item.is_liked ? '#ff4444' : '#333'} />
                   <Text style={styles.actionText}>{item.likes_count}</Text>
                 </TouchableOpacity>
 
@@ -259,6 +267,7 @@ const HomeScreen = () => {
           </View>
         </View>
       </Modal>
+
     </View>
   );
 };

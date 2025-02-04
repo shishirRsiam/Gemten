@@ -21,8 +21,10 @@ const LoginScreen = ({ route, navigation }) => {
         try {
             const response = await axios.post(Api.login, loginData);
             setUser(response.data.user_info);
-            alert("Login Successfull");
             await AsyncStorage.setItem("authToken", response.data.token);
+            await AsyncStorage.setItem("userName", response.data.user_info.user.username);
+            // await AsyncStorage.setItem("userId", response.data.user_info.user.id);
+            alert("Login Successfull");
         } catch (error) {
             alert("Login Failed Invalid Credentials");
             console.error("Login Error Opps:", error.response ? error.response.data : error.message);

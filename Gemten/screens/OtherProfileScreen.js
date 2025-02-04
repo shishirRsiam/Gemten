@@ -12,7 +12,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import Api from '../services/Api';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
@@ -21,16 +20,17 @@ const UserProfileScreen = ({ route }) => {
     const { id } = route.params;
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const [friendshipStatus, setFriendshipStatus] = useState(null); // Tracks friendship status
 
     const fetchUserData = async () => {
         try {
-            const response = await axios.get(`${Api.get_other_profile}/${id}`,{
+            const response = await axios.get(`${Api.get_other_profile}/${id}`, {
                 headers: {
                     Authorization: await AsyncStorage.getItem('authToken'),
                 },
             });
-            setUser(response.data.user_profile);
+            setUser(response.data);
+            setFriendshipStatus(response.data.friendship_status);
         } catch (error) {
             console.error('Error fetching user data:', error.response?.data || error.message);
         } finally {
@@ -59,14 +59,95 @@ const UserProfileScreen = ({ route }) => {
     }
 
     const {
-        user: { username, email, first_name, last_name },
-        phone_no,
-        date_of_birth,
-        gender,
-        profile_pic,
-        address,
-        bio,
+        user_profile: {
+            user: { username, email, first_name, last_name },
+            phone_no,
+            date_of_birth,
+            gender,
+            profile_pic,
+            address,
+            bio,
+        },
+        auth,
     } = user;
+
+    // Handle friendship actions
+    const handleFriendshipAction = async (action) => {
+        try {
+            let api, newStatus;
+
+            if (action === 'add_friend') {
+                api = `${Api.connect}/${id}/?sent_request=true`;
+                newStatus = 'request_sent';
+            } else if (action === 'cancel_request') {
+                api = `${Api.connect}/${id}/?cancel_requst=true`;
+                newStatus = 'not_friends';
+            } else if (action === 'accept_request') {
+                api = `${Api.connect}/${id}/?accept_request=true`;
+                newStatus = 'friends';
+            } else if (action === 'reject_request') {
+                api = `${Api.connect}/${id}/?reject_request=true`;
+                newStatus = 'not_friends';
+            }
+
+            const response = await axios.post(api, {}, {
+                headers: {
+                    Authorization: `${await AsyncStorage.getItem('authToken')}`,
+                },
+            });
+            setFriendshipStatus(newStatus);
+        } catch (error) {
+            console.error('Error updating friendship status:', error.response?.data || error.message);
+            alert('Failed to update friendship status.');
+        }
+    };
+
+    // Render friendship status button
+    const renderFriendshipButton = () => {
+        if (auth) {
+            return null; // No action needed if it's the user's own profile
+        }
+
+        switch (friendshipStatus) {
+            case 'friends':
+                return (
+                    <TouchableOpacity style={styles.friendButton}>
+                        <Text style={styles.friendButtonText}>Friends</Text>
+                    </TouchableOpacity>
+                );
+            case 'request_sent':
+                return (
+                    <TouchableOpacity
+                        style={styles.friendButton}
+                        onPress={() => handleFriendshipAction('cancel_request')}
+                    >
+                        <Text style={styles.friendButtonText}>Cancel Request</Text>
+                    </TouchableOpacity>
+                );
+            case 'request_received':
+                return (
+                    <View style={{ justifyContent: 'space-between' }}>
+                        <TouchableOpacity style={styles.friendButton}
+                            onPress={() => handleFriendshipAction('accept_request')}>
+                            <Text style={styles.friendButtonText}>Accept Request</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.friendButton}
+                            onPress={() => handleFriendshipAction('reject_request')}>
+                            <Text style={styles.friendButtonText}>Reject Request</Text>
+                        </TouchableOpacity>
+                    </View>
+                );
+            default:
+                return (
+                    <TouchableOpacity
+                        style={styles.friendButton}
+                        onPress={() => handleFriendshipAction('add_friend')}
+                    >
+                        <Text style={styles.friendButtonText}>Add Friend</Text>
+                    </TouchableOpacity>
+                );
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -87,7 +168,7 @@ const UserProfileScreen = ({ route }) => {
                     <Image
                         source={{
                             uri: profile_pic.startsWith('/')
-                                ? `https://your-api-endpoint.com${profile_pic}`
+                                ? `${Api.base_url}${profile_pic}`
                                 : profile_pic,
                         }}
                         style={styles.profilePic}
@@ -100,6 +181,9 @@ const UserProfileScreen = ({ route }) => {
                     <Text style={styles.username}>@{username}</Text>
                     <Text style={styles.bio}>{bio || 'No bio available.'}</Text>
 
+                    {/* Friendship Status Button */}
+                    {renderFriendshipButton()}
+
                     {/* Followers/Following Stats */}
                     <View style={styles.statsContainer}>
                         <View style={styles.statItem}>
@@ -111,19 +195,6 @@ const UserProfileScreen = ({ route }) => {
                             <Text style={styles.statLabel}>Following</Text>
                         </View>
                     </View>
-                </View>
-
-                {/* Action Buttons */}
-                <View style={styles.actionsContainer}>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Icon name="settings-outline" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Icon name="chatbubble-outline" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Icon name="notifications-outline" size={24} color="#fff" />
-                    </TouchableOpacity>
                 </View>
 
                 {/* Additional Info Card */}
@@ -165,7 +236,6 @@ const styles = StyleSheet.create({
     blurOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        // Use react-native-blur or similar libraries for true blur effect
     },
     loadingContainer: {
         flex: 1,
@@ -256,24 +326,19 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#dcdcdc',
     },
-    actionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '60%',
-        marginBottom: 30,
-    },
-    actionButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+    friendButton: {
+        width: '80%',
+        paddingVertical: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5,
-        shadowRadius: 10,
-        elevation: 5,
+        marginBottom: 20,
+    },
+    friendButtonText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#fff',
     },
     infoCard: {
         width: '90%',

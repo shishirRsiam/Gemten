@@ -7,29 +7,33 @@ from django.shortcuts import get_object_or_404
 from .serializers import FriendRequestSerializer, FriendshipSerializer
 
 
-class SendFriendRequestView(APIView):
+class ConnectView(APIView):
     def post(self, request, user_id):
-        sender = request.user
-        receiver = get_object_or_404(User, id=user_id)
+        viewed_user = get_object_or_404(User, id=user_id)
 
-        friend_request = FriendRequest.objects.create(sender=sender, receiver=receiver)
-        return Response(FriendRequestSerializer(friend_request).data, status=status.HTTP_201_CREATED)
-
-
-class AcceptFriendRequestView(APIView):
-    def post(self, request, request_id):
-        friend_request = get_object_or_404(FriendRequest, id=request_id)
-
-        friend_request.accept()
-        return Response({"message": "Friend request accepted!"}, status=status.HTTP_200_OK)
-
-
-class RejectFriendRequestView(APIView):
-    def delete(self, request, request_id):
-        friend_request = get_object_or_404(FriendRequest, id=request_id, receiver=request.user)
-
-        friend_request.reject()
-        return Response({"message": "Friend request rejected!"}, status=status.HTTP_200_OK)
+        sent_requst = request.query_params.get('sent_request', None)
+        if sent_requst:                   
+            friend_request = FriendRequest.objects.create(sender=request.user, receiver=viewed_user)
+            return Response(FriendRequestSerializer(friend_request).data, status=status.HTTP_201_CREATED)
+        
+        cancel_requst = request.query_params.get('cancel_requst', None)
+        if cancel_requst:
+            friend_request = FriendRequest.objects.filter(sender=request.user, receiver=viewed_user).first()
+            friend_request.cancel()
+            return Response({'message': 'Friend request canceled!'}, status=status.HTTP_200_OK)
+        
+        accept_request = request.query_params.get('accept_request', None)
+        friend_request = FriendRequest.objects.filter(sender=viewed_user, receiver=request.user).first()
+        if accept_request:
+            friend_request.accept()
+            return Response({'message': 'Friend request accepted!'}, status=status.HTTP_200_OK)
+        
+        reject_request = request.query_params.get('reject_request', None)
+        if reject_request:
+            friend_request.reject()
+            return Response({'message': 'Friend request rejected!'}, status=status.HTTP_200_OK)
+        
+        return Response({'message': 'Invalid request! try with connect/<user_id>?<sent_request|cancel_requst|accept_request|reject_request>=true'})
 
 
 class FriendRequestListView(APIView):

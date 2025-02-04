@@ -24,19 +24,10 @@ class UserViewSet(APIView):
             viewed_profile = User.objects.get(id=profile_id)
             user_profile_serializer = UserProfileSerializer(viewed_profile.userprofile)
 
-            friends, request_sent, request_received = False, False, False
-            if request_user == viewed_profile:
-                return Response({"status": True, "auth": True})
-            
-            if Friendship.objects.filter(user1=request_user, user2=viewed_profile).exists() or Friendship.objects.filter(user1=viewed_profile, user2=request_user).exists():
-                friends = True
-            elif FriendRequest.objects.filter(sender=request_user, receiver=viewed_profile).exists():
-                request_sent = True
-            elif FriendRequest.objects.filter(sender=viewed_profile, receiver=request_user).exists():
-                request_received = True
+            friendship_status = self.get_friendship_tatus(request_user, viewed_profile)
 
             post_serializer = PostSerializer(viewed_profile.posts.all(), many=True, context={'request': request})
-            response = get_viewed_profile_response(user_profile_serializer, friends=friends, request_sent=request_sent, request_received=request_received)
+            response = get_viewed_profile_response(user_profile_serializer, friendship_status)
             return Response(response)
         
         user_profile_serializer = UserProfileSerializer(request.user.userprofile)
@@ -99,6 +90,15 @@ class UserViewSet(APIView):
         friendships = Friendship.objects.filter(user1=user) | Friendship.objects.filter(user2=user)
         friends = [friendship.user1 if friendship.user2 == user else friendship.user2 for friendship in friendships]
         return friends
+    
+    def get_friendship_tatus(self, request_user, viewed_profile):
+        if Friendship.objects.filter(user1=request_user, user2=viewed_profile).exists() or Friendship.objects.filter(user1=viewed_profile, user2=request_user).exists():
+            return 'friends'
+        elif FriendRequest.objects.filter(sender=request_user, receiver=viewed_profile).exists():
+            return 'request_sent'
+        elif FriendRequest.objects.filter(sender=viewed_profile, receiver=request_user).exists():
+            return 'request_received'
+        return 'not_friends'            
 
 class EmailVerifyAPIView(APIView):
     def get(self, request, uid, token):
