@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Text,
   View,
@@ -17,11 +17,13 @@ import Api from '../services/Api';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Ionicons'; // For icons
+import Icon from 'react-native-vector-icons/Ionicons'; 
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const scrollViewRef = useRef(null);
   const [posts, setPosts] = useState([]);
+  const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -45,6 +47,9 @@ const HomeScreen = () => {
         }
       };
       fetchPosts();
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: 0, animated: true });
+      }
     }, [])
   );
 
@@ -71,6 +76,27 @@ const HomeScreen = () => {
     } catch (error) {
       console.error('Error liking post:', error.message || error);
       alert('Failed to like the post. Please try again.');
+    }
+  };
+
+
+  const handleAddPost = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axios.post(Api.add_post,
+        { content },
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      setPosts((prevPosts) => [response.data, ...prevPosts]);
+      alert('Post created successfully!');
+      setContent('');
+    } catch (error) {
+      console.error('Error adding post:', error.response?.data || error.message);
+      alert('Failed to create post. Please try again.');
     }
   };
 
@@ -133,15 +159,27 @@ const HomeScreen = () => {
 
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} ref={scrollViewRef}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Gemten Feed</Text>
       </View>
 
+      {/* Post Form */}
+      <View style={{}}>
+        <TextInput style={styles.postInput}
+          placeholder="What's on your mind?"
+          value={content} onChangeText={(text) => setContent(text)}
+          multiline numberOfLines={4} />
+        <TouchableOpacity style={styles.postButton} onPress={handleAddPost}>
+          <Text style={styles.postButtonText}>Post</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Posts List */}
       {posts.length > 0 ? (
         <FlatList
+        
           data={posts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
@@ -178,7 +216,7 @@ const HomeScreen = () => {
 
               {/* Media Section */}
               {item.media && item.media.length > 0 ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View horizontal showsHorizontalScrollIndicator={false}>
                   {item.media.map((mediaItem, index) => (
                     <Image
                       key={index}
@@ -186,7 +224,7 @@ const HomeScreen = () => {
                       style={styles.mediaImage}
                     />
                   ))}
-                </ScrollView>
+                </View>
               ) : null}
 
               {/* Post Actions */}
@@ -268,7 +306,7 @@ const HomeScreen = () => {
         </View>
       </Modal>
 
-    </View>
+    </ScrollView>
   );
 };
 
@@ -278,6 +316,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+  },
+  postForm: {
+    padding: 15,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   header: {
     padding: 20,
@@ -297,6 +341,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 15,
     margin: 10,
+    marginBottom: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -313,6 +358,30 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 10,
+  },
+  postInput: {
+    height: 100,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    margin: 10,
+    textAlignVertical: 'top',
+  },
+  postButton: {
+    alignSelf: 'flex-end',
+    padding: 10,
+    backgroundColor: '#3b82f6',
+    borderRadius: 20,
+    // margin: 'auto',
+    marginRight: 20,
+  },
+  postButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    paddingHorizontal: 20,
   },
   userDetails: {
     flexDirection: 'column',

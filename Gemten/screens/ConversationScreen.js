@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 
 const ConversationShowingScreen = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
   const conversations = [
     {

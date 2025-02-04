@@ -70,11 +70,11 @@ const AuthenticatedTabs = ({ setUser }) => {
           component={HomeScreen}
           options={{ title: 'Feed', headerShown: false }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Add Post"
           component={AddPostScreen}
           options={{ title: 'Add Post', headerShown: false }}
-        />
+        /> */}
         <Tab.Screen
           name="Message"
           component={ConversationShowingScreen}
