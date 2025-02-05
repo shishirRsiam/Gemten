@@ -8,6 +8,8 @@ const Api = {
     accept_friend_request: `${baseUrl}/user`, 
     cancel_friend_request: `${baseUrl}/user`, 
     add_post: `${baseUrl}/posts/`,  
+    get_chats: `${baseUrl}/chats/`,
+    get_chat_messages: `${baseUrl}/chats`,
     get_users: `${baseUrl}/users/`,
     login: `${baseUrl}/login/`, 
     register: `${baseUrl}/user/`,

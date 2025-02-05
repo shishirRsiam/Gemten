@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -36,6 +36,12 @@ const ConversationShowingScreen = () => {
       timestamp: '3 days ago',
     },
   ];
+
+
+  useEffect(() => {
+    
+  }, [navigation]);
+
 
   const handleConversationPress = (conversationId) => {
     // Handle conversation press action

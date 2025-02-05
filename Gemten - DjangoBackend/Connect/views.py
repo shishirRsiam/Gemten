@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .models import FriendRequest, Friendship
 from django.shortcuts import get_object_or_404
 from .serializers import FriendRequestSerializer, FriendshipSerializer
+from Chat.models import Chat, Message
 
 
 class ConnectView(APIView):

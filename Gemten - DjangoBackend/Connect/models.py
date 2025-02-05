@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from Chat.models import Chat, Message
 
 class Friendship(models.Model):
     user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends1")
@@ -24,6 +25,7 @@ class FriendRequest(models.Model):
 
     def accept(self):
         Friendship.objects.create(user1=self.sender, user2=self.receiver)
+        Chat.objects.get_or_create(user1=self.sender, user2=self.receiver)
         self.delete()
         
     def reject(self):
