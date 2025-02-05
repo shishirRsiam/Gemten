@@ -8,7 +8,7 @@ SECRET_KEY = credentials.SECRET_KEY
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', '192.168.0.101']
+ALLOWED_HOSTS = ['*', '192.168.0.101', "http://192.168.0.101:8000", "http://127.0.0.1:8000"]
 
 
 INSTALLED_APPS = [
@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework', 'rest_framework.authtoken', 
-    'Authentication', 'Email_Sent', 'Post', 'Connect',
+    'Authentication', 'Email_Sent', 'Post', 'Connect', 'Chat',
 ]
 
 

@@ -27,7 +27,6 @@ const AuthenticatedTabs = ({ setUser }) => {
     try {
       await AsyncStorage.removeItem('authToken');
       setUser(null);
-
     } catch (error) {
       console.error('Error logging out:', error.message);
       Alert.alert('Error', 'Failed to log out. Please try again.');
@@ -158,6 +157,7 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem('authToken');
+      console.log('token ==>', token);
       if (token) {
         try {
           const response = await axios.get(Api.get_auth_profile, {
