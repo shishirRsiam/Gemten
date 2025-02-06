@@ -32,7 +32,6 @@ const ProfileScreen = () => {
         });
         setUserProfile(response.data.user_info);
         setPosts(response.data.posts);
-        console.log(response.data);
       } catch (error) {
         console.error('Error fetching user profile:', error.message || error);
       } finally {

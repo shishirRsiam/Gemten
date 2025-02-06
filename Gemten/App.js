@@ -21,6 +21,11 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 
+import io from 'socket.io-client';
+
+const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
+const socket = io(SOCKET_URL);
+
 
 const AuthenticatedTabs = ({ setUser }) => {
   const handleLogout = async () => {
@@ -31,6 +36,9 @@ const AuthenticatedTabs = ({ setUser }) => {
       console.error('Error logging out:', error.message);
       Alert.alert('Error', 'Failed to log out. Please try again.');
     }
+    return () => {
+      socket.off('chat message');
+    };
   };
 
   return (
@@ -154,6 +162,22 @@ const UnauthenticatedScreens = ({ setUser }) => {
 export default function App() {
   const [user, setUser] = useState(null);
 
+  const setSoketConnection = async () => {
+    const userId = await AsyncStorage.getItem('userName');
+    if (userId) {
+      console.log('username ==>', userId);
+      socket.emit('set username', { userId, token: await AsyncStorage.getItem('authToken') });
+
+      // Listen for incoming messages
+      socket.on('chat message', ({ senderId, content }) => {
+        setApiMessages((prevMessages) => [
+          ...prevMessages,
+          { senderId, content, id: Date.now() }, // Add a unique ID for rendering
+        ]);
+      });
+    }
+  };
+
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem('authToken');
@@ -166,6 +190,7 @@ export default function App() {
             },
           });
           setUser(response.data.user_info);
+          // setSoketConnection();
         } catch (error) {
           alert('Error fetching user data');
           console.error('Error fetching user data:', error.response?.data || error.message);
@@ -173,6 +198,9 @@ export default function App() {
       }
     };
     checkAuth();
+    return () => {
+      socket.off('chat message'); // Remove the listener
+    };
   }, []);
 
   return (

@@ -6,6 +6,8 @@ import Api from '../services/Api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+
+
 const ConversationShowingScreen = () => {
   const navigation = useNavigation();
   const [conversations, setConversations] = useState([]);
@@ -23,7 +25,6 @@ const ConversationShowingScreen = () => {
       });
 
       setConversations(response.data);
-      console.log(response.data);
     } catch (error) {
       console.error('Error fetching conversations:', error.message || error);
     } finally {

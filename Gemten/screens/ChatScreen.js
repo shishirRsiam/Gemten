@@ -16,6 +16,10 @@ import axios from 'axios';
 import Api from '../services/Api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
+import io from 'socket.io-client';
+
+const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
+const socket = io(SOCKET_URL);
 
 const ChatScreen = ({ navigation }) => {
   const flatListRef = useRef(null);
@@ -39,9 +43,31 @@ const ChatScreen = ({ navigation }) => {
     }
   };
 
+  const setSoketConnection = async () => {
+    const userId = await AsyncStorage.getItem('userName');
+    if (userId) {
+      console.log('username ==>', userId);
+      socket.emit('set username', { userId });
+
+      // Listen for incoming messages
+      socket.on('chat message', ({ senderId, content }) => {
+        setApiMessages((prevMessages) => [
+          ...prevMessages,
+          { senderId, content, id: Date.now() }, // Add a unique ID for rendering
+        ]);
+      });
+    }
+  };
+
   useEffect(() => {
     console.log('Fetching messages...', conversationId);
     fetchMessages();
+    // setSoketConnection();
+
+    // Clean-up socket connection when the component unmounts
+    // return () => {
+    //   socket.off('chat message'); // Remove the listener
+    // };
   }, [conversationId]);
 
   useEffect(() => {
@@ -67,6 +93,7 @@ const ChatScreen = ({ navigation }) => {
       console.log('Message sent successfully');
       setApiMessages((prevMessages) => [response.data, ...prevMessages]); // Append new message to the list
       setInputText(''); // Clear the input field
+      socket.emit('chat message', { senderId: 'yourSenderId', content: inputText }); // Emit the message
     } catch (error) {
       console.error('Error sending message:', error);
       Alert.alert('Error', 'Failed to send the message. Please try again.');
@@ -127,7 +154,7 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     padding: 10,
-    flexGrow: 1, // Ensure the list takes up available space
+    flexGrow: 1,
   },
   messageContainer: {
     maxWidth: '80%',

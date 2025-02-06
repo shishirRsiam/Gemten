@@ -204,7 +204,6 @@ const HomeScreen = () => {
                     </Text>
                   </TouchableOpacity>
 
-
                   <Text style={styles.fullName}>
                     {item.views} views • {new Date(item.created_at).toLocaleString()}
                   </Text>
@@ -219,11 +218,9 @@ const HomeScreen = () => {
               {item.media && item.media.length > 0 ? (
                 <View horizontal showsHorizontalScrollIndicator={false}>
                   {item.media.map((mediaItem, index) => (
-                    <Image
-                      key={index}
+                    <Image key={index}
                       source={{ uri: mediaItem.url }}
-                      style={styles.mediaImage}
-                    />
+                      style={styles.mediaImage} />
                   ))}
                 </View>
               ) : null}
@@ -289,8 +286,7 @@ const HomeScreen = () => {
                 value={newComment.post === selectedPost?.id ? newComment.content : ''}
                 onChangeText={(content) =>
                   setNewComment({ post: selectedPost?.id, content })
-                }
-              />
+                } />
               <TouchableOpacity
                 style={styles.commentSubmitButton}
                 onPress={handleAddComment}
@@ -315,6 +311,7 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
 
 const styles = StyleSheet.create({
   container: {
