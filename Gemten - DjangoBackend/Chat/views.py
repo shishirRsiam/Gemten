@@ -19,7 +19,7 @@ class MessageView(APIView):
         print('chat_id ==>', chat_id)
         print('request.user ==>', request.user)
         chat = Chat.objects.get(id=chat_id)
-        serializer = MessageSerializer(chat.messages, many=True)
+        serializer = MessageSerializer(chat.messages, many=True, context={'request': request})
         return Response(serializer.data)
     
     def post(self, request, chat_id):
@@ -27,4 +27,4 @@ class MessageView(APIView):
         chat.last_message = request.data.get('content')
         chat.save()
         message = Message.objects.create(chat=chat, sender=request.user, content=request.data.get('content'))
-        return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+        return Response(MessageSerializer(message, context={'request': request}).data, status=status.HTTP_201_CREATED)

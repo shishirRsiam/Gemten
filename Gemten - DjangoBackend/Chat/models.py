@@ -27,3 +27,6 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender.username} in chat with {self.chat.user1.username if self.sender != self.chat.user1 else self.chat.user2.username}"
+    
+    class Meta:
+        ordering = ['-id']

@@ -1,46 +1,121 @@
-import React from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Alert,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
+import axios from 'axios';
+import Api from '../services/Api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 const ChatScreen = ({ navigation }) => {
-  // Dummy data for chat messages
-  const messages = [
-    { id: '1', text: 'Hello!', sender: 'other' },
-    { id: '2', text: 'Hi there!', sender: 'me' },
-    { id: '3', text: 'How are you?', sender: 'other' },
-    { id: '4', text: 'I am good, thanks!', sender: 'me' },
-    { id: '5', text: 'What about you?', sender: 'me' },
-  ];
+  const flatListRef = useRef(null);
+  const route = useRoute(); // Get route params
+  const { conversationId } = route.params || {};
+  const [apiMessages, setApiMessages] = useState([]);
+  const [inputText, setInputText] = useState('');
 
-  // Render each message item
+  // Fetch messages from the API
+  const fetchMessages = async () => {
+    try {
+      const response = await axios.get(`${Api.get_messages}/${conversationId}/messages/`, {
+        headers: {
+          Authorization: `${await AsyncStorage.getItem('authToken')}`,
+        },
+      });
+      setApiMessages(response.data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      Alert.alert('Error', 'Failed to load messages. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    console.log('Fetching messages...', conversationId);
+    fetchMessages();
+  }, [conversationId]);
+
+  useEffect(() => {
+    // Scroll to the bottom when new messages are added
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [apiMessages]);
+
+  // Handle sending a new message
+  const sendMessage = async () => {
+    if (inputText.trim().length === 0) return;
+
+    try {
+      // Send the message to the server
+      const response = await axios.post(
+        `${Api.send_message}/${conversationId}/messages/`,
+        { conversationId, content: inputText },
+        {
+          headers: {
+            Authorization: await AsyncStorage.getItem('authToken'),
+          },
+        }
+      );
+      console.log('Message sent successfully');
+      setApiMessages((prevMessages) => [response.data, ...prevMessages]); // Append new message to the list
+      setInputText(''); // Clear the input field
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Alert.alert('Error', 'Failed to send the message. Please try again.');
+    }
+  };
+
+  // Render chat messages
   const renderItem = ({ item }) => (
-    <View style={[styles.messageContainer, item.sender === 'me' ? styles.rightMessage : styles.leftMessage]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+    <View style={[styles.messageContainer, !item.texted_me ? styles.rightMessage : styles.leftMessage]}>
+      <Text style={styles.messageText}>{item.content}</Text>
     </View>
   );
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* Chat Messages List */}
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.messagesContainer}
-      />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* Message List */}
+          <FlatList
+            ref={flatListRef}
+            data={apiMessages}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={styles.messagesContainer}
+            inverted
+            initialNumToRender={20} // Load initial items for smoother performance
+            maxToRenderPerBatch={10} // Limit the number of items rendered per batch
+            windowSize={5} // Number of items to keep in memory
+          />
 
-      {/* Input Area */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-        />
-        <TouchableOpacity style={styles.sendButton}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Input Area */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message..."
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={sendMessage} // Optional: Send message on "Enter" press
+            />
+            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
@@ -52,6 +127,7 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     padding: 10,
+    flexGrow: 1, // Ensure the list takes up available space
   },
   messageContainer: {
     maxWidth: '80%',
