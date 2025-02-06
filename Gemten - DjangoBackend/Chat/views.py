@@ -10,7 +10,8 @@ class ChatListView(APIView):
         print("(v)"*30)
         print('request.user ==>', request.user)
         chats = Chat.objects.filter(user1=request.user) | Chat.objects.filter(user2=request.user)
-        serializer = ChatSerializer(chats, many=True)
+
+        serializer = ChatSerializer(chats, many=True, context={'request': request})
         return Response(serializer.data)
 
 class MessageView(APIView):
@@ -23,5 +24,7 @@ class MessageView(APIView):
     
     def post(self, request, chat_id):
         chat = Chat.objects.get(id=chat_id)
+        chat.last_message = request.data.get('content')
+        chat.save()
         message = Message.objects.create(chat=chat, sender=request.user, content=request.data.get('content'))
         return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)

@@ -11,13 +11,14 @@ import {
   Modal,
   Keyboard,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import axios from 'axios';
 import Api from '../services/Api';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Ionicons'; 
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -179,7 +180,7 @@ const HomeScreen = () => {
       {/* Posts List */}
       {posts.length > 0 ? (
         <FlatList
-        
+
           data={posts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
@@ -197,7 +198,7 @@ const HomeScreen = () => {
                     else navigation.navigate('OtherProfile', { id: item.user.id });
                   }}>
                     <Text style={styles.username}>
-                      @{item.user.username} {item.user.username === 'shishir' && (
+                      @{item.user.username} {(item.user.username === 'shishir' || item.user.username === 'gemten') && (
                         <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
                       )}
                     </Text>
@@ -260,6 +261,9 @@ const HomeScreen = () => {
               <FlatList
                 data={selectedPost.comments}
                 keyExtractor={(comment) => comment.id.toString()}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={fetchConversations} colors={['#1DA1F2']} />
+                }
                 renderItem={({ item }) => (
                   <View style={styles.comment}>
                     <Image

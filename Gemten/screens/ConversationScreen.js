@@ -1,68 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-
+import React, { useState, useCallback } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
+import Api from '../services/Api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const ConversationShowingScreen = () => {
   const navigation = useNavigation();
+  const [conversations, setConversations] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true); // Show loading indicator on first render
 
-  const conversations = [
-    {
-      id: '1',
-      name: 'John Doe',
-      avatar: 'https://i.pravatar.cc/150?img=1',
-      lastMessage: 'Hey, how are you?',
-      timestamp: '10:30 AM',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      avatar: 'https://i.pravatar.cc/150?img=2',
-      lastMessage: 'Let’s meet tomorrow.',
-      timestamp: 'Yesterday',
-    },
-    {
-      id: '3',
-      name: 'Alice Johnson',
-      avatar: 'https://i.pravatar.cc/150?img=3',
-      lastMessage: 'I sent you the files.',
-      timestamp: '2 days ago',
-    },
-    {
-      id: '4',
-      name: 'Bob Brown',
-      avatar: 'https://i.pravatar.cc/150?img=4',
-      lastMessage: 'Are you free now?',
-      timestamp: '3 days ago',
-    },
-  ];
+  const fetchConversations = async () => {
+    try {
+      setRefreshing(true); // Start refreshing
+      const authToken = await AsyncStorage.getItem('authToken');
+      const response = await axios.get(Api.get_conversations, {
+        headers: {
+          Authorization: authToken,
+        },
+      });
 
+      setConversations(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching conversations:', error.message || error);
+    } finally {
+      setRefreshing(false); // Stop refreshing
+      setLoading(false); // Hide loading indicator
+    }
+  };
 
-  useEffect(() => {
-    
-  }, [navigation]);
-
+  // Fetch conversations when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchConversations();
+    }, [])
+  );
 
   const handleConversationPress = (conversationId) => {
-    // Handle conversation press action
     console.log('Conversation pressed:', conversationId);
-    // You can navigate to the conversation screen here
     navigation.navigate('Chat', { conversationId });
   };
 
-  // Render each conversation item
-  const renderConversation = ({ item }) => (
-    <TouchableOpacity style={styles.conversationContainer} onPress={() => handleConversationPress(item.id)}>
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <View style={styles.conversationDetails}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.lastMessage} numberOfLines={1}>
-          {item.lastMessage}
-        </Text>
-      </View>
-      <Text style={styles.timestamp}>{item.timestamp}</Text>
-    </TouchableOpacity>
-  );
+  const renderConversation = ({ item }) => {
+    const receiver = item.receiver;
+    return (
+      <TouchableOpacity style={styles.conversationContainer} onPress={() => handleConversationPress(item.id)}>
+        <Image
+          source={{ uri: receiver.avatar || 'https://w7.pngwing.com/pngs/388/487/png-transparent-computer-icons-graphy-img-landscape-graphy-icon-miscellaneous-angle-text-thumbnail.png' }}
+          style={styles.avatar}
+        />
+        <View style={styles.conversationDetails}>
+          <Text style={styles.name}>
+            @{receiver.username} {(receiver.username === 'shishir' || receiver.username === 'gemten') && (
+              <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
+            )}
+          </Text>
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.last_message ? item.last_message : 'No messages yet'}
+          </Text>
+        </View>
+        <Text style={styles.timestamp}>{new Date(item.updated_at).toLocaleTimeString()}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -71,13 +74,20 @@ const ConversationShowingScreen = () => {
         <Text style={styles.headerTitle}>Chats</Text>
       </View>
 
-      {/* List of Conversations */}
-      <FlatList
-        data={conversations}
-        keyExtractor={(item) => item.id}
-        renderItem={renderConversation}
-        contentContainerStyle={styles.listContainer}
-      />
+      {/* Loading Indicator on First Load */}
+      {loading ? (
+        <ActivityIndicator size="large" color="#1DA1F2" style={styles.loadingIndicator} />
+      ) : (
+        <FlatList
+          data={conversations}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderConversation}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={fetchConversations} colors={['#1DA1F2']} />
+          }
+        />
+      )}
     </View>
   );
 };
@@ -129,6 +139,9 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: 12,
     color: '#aaa',
+  },
+  loadingIndicator: {
+    marginTop: 20,
   },
 });
 

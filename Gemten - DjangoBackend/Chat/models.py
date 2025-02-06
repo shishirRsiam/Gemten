@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Chat(models.Model):
+    last_message = models.TextField(null=True, blank=True)
     user1 = models.ForeignKey(User, related_name='chats_as_user1', on_delete=models.CASCADE)
     user2 = models.ForeignKey(User, related_name='chats_as_user2', on_delete=models.CASCADE)
 
@@ -13,6 +14,7 @@ class Chat(models.Model):
     
     class Meta:
         unique_together = ['user1', 'user2']
+        ordering = ['-updated_at']
         
 
 class Message(models.Model):
