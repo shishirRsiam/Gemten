@@ -191,8 +191,6 @@ const ProfileScreen = () => {
       )}
 
     </ScrollView>
-
-
   );
 };
 

@@ -14,6 +14,7 @@ class ChatListView(APIView):
         serializer = ChatSerializer(chats, many=True, context={'request': request})
         return Response(serializer.data)
 
+
 class MessageView(APIView):
     def get(self, request, chat_id):
         print('chat_id ==>', chat_id)
