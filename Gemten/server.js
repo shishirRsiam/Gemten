@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const { Client } = require('pg');
 
+
 const client = new Client({
     user: process.env.DATABASE_USER,
     host: process.env.DATABASE_HOST,
@@ -14,10 +15,10 @@ const client = new Client({
     port: process.env.DATABASE_PORT,
 });
 
+
 client.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch(err => console.error('Connection error', err.stack));
-
 
 
 const app = express();
@@ -42,27 +43,42 @@ io.on('connection', (socket) => {
     // Listen for username submission
     socket.on('set username', ({ userId, token }) => {
         console.log(`User ${userId} has set their username.`);
-        users[socket.id] = userId;
+        users[userId] = socket.id;
         console.log(`User ${userId} has joined the chat.`);
     });
 
     // Listen for chat messages
-    socket.on('chat message', async ({ authToken, chatId, content }) => {
+    socket.on('chat message', async ({ authToken, chatId, content, response }) => {
         const apiUrl = `http://localhost:8000/api/chats/${chatId}/messages/`;
 
         try {
-            const response = await axios.post(apiUrl,
-                { content: content }, {
-                headers: {
-                    Authorization: authToken,
-                    'Content-Type': 'application/json',
-                }
-            }
-            );
+            // const response = await axios.post(apiUrl,
+            //     { content: content }, {
+            //     headers: {
+            //         Authorization: authToken,
+            //         'Content-Type': 'application/json',
+            //     }
+            // }
+            // );
+            const senderUserId = response.data.sender.username;
+            const receiverUserId = response.data.receiver.username;
 
-            io.emit('chat message', response.data);
+            console.log('Sender User Name:', senderUserId);
+            console.log('Receiver User Name:', receiverUserId);
+
+            // io.emit('chat message', response.data);
+
             // console.log('Message Sent:', response.data);
 
+            for (const userId in users) {
+                console.log(`User ${userId} is online`);
+                if (userId == receiverUserId) {
+                    console.log(`User ${userId} is online`);
+                    response.data.texted_me = true;
+                    io.to(users[receiverUserId]).emit('chat message', response.data);
+                    break;
+                }
+            }
             // res.json({ message: 'Message sent successfully', response: response.data });
         } catch (error) {
             console.error('Error sending message:', error.response ? error.response.data : error.message);
@@ -103,24 +119,22 @@ app.get('/user/', async (req, res) => {
     const apiUrl = 'http://localhost:8000/api/chats/9/messages/';
 
     try {
-        const response = await axios.post(apiUrl,
-            { content: content }, // Message payload
-            {
-                headers: {
-                    Authorization: authToken,
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
+        // const response = await axios.post(apiUrl,
+        //     { content: content }, // Message payload
+        //     {
+        //         headers: {
+        //             Authorization: authToken,
+        //             'Content-Type': 'application/json',
+        //         }
+        //     }
+        // );
 
-        console.log('Message Sent:', response.data);
-        res.json({ message: 'Message sent successfully', response: response.data });
+        res.json({ message: 'Message sent successfully', user: users });
     } catch (error) {
         console.error('Error sending message:', error.response ? error.response.data : error.message);
         res.status(500).json({ error: 'Failed to send message' });
     }
 });
-
 
 app.get('/user/:userId', (req, res) => {
     const { userId } = req.params;

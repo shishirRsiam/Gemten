@@ -101,7 +101,7 @@ const ChatScreen = ({ navigation }) => {
       );
       console.log('Message sent successfully');
       setApiMessages((prevMessages) => [response.data, ...prevMessages]); // Append new message to the list
-      socket.emit('chat message', { authToken: token, chatId: conversationId, content: inputText });
+      socket.emit('chat message', { authToken: token, chatId: conversationId, content: inputText, response: response, });
       setInputText(''); // Clear the input field
     } catch (error) {
       console.error('Error sending message:', error);

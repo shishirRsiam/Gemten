@@ -21,6 +21,7 @@ class ChatSerializer(serializers.ModelSerializer):
     
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
+    receiver = serializers.SerializerMethodField()
     texted_me = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,3 +31,8 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_texted_me(self, obj):
         request_user = self.context['request'].user
         return obj.sender != request_user
+    
+    def get_receiver(self, obj):
+        request_user = self.context['request'].user
+        receiver = obj.chat.user2 if obj.chat.user1 == request_user else obj.chat.user1
+        return UserSerializer(receiver).data
