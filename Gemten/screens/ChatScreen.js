@@ -22,6 +22,7 @@ const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
 const socket = io(SOCKET_URL);
 
 const ChatScreen = ({ navigation }) => {
+  const [token, setToken] = useState(null);
   const flatListRef = useRef(null);
   const route = useRoute(); // Get route params
   const { conversationId } = route.params || {};
@@ -33,7 +34,7 @@ const ChatScreen = ({ navigation }) => {
     try {
       const response = await axios.get(`${Api.get_messages}/${conversationId}/messages/`, {
         headers: {
-          Authorization: `${await AsyncStorage.getItem('authToken')}`,
+          Authorization: await AsyncStorage.getItem('authToken')
         },
       });
       setApiMessages(response.data);
@@ -50,24 +51,32 @@ const ChatScreen = ({ navigation }) => {
       socket.emit('set username', { userId });
 
       // Listen for incoming messages
-      socket.on('chat message', ({ senderId, content }) => {
-        setApiMessages((prevMessages) => [
-          ...prevMessages,
-          { senderId, content, id: Date.now() }, // Add a unique ID for rendering
-        ]);
+      socket.on('chat message', (response) => {
+        // setApiMessages((prevMessages) => [
+        //   ...prevMessages,
+        //   { senderId, content, id: Date.now() }, 
+        // ]);
+        // console.log('Received message:', content);
+        // console.log('Received senderId:', senderId);
+        console.log('Received response:', response);
+        setApiMessages((prevMessages) => [response, ...prevMessages]);
       });
     }
   };
 
   useEffect(() => {
-    console.log('Fetching messages...', conversationId);
+    const getToken = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      setToken(token);
+    }
+    getToken();
     fetchMessages();
-    // setSoketConnection();
+    setSoketConnection();
+    console.log('Fetching messages...', conversationId);
 
-    // Clean-up socket connection when the component unmounts
-    // return () => {
-    //   socket.off('chat message'); // Remove the listener
-    // };
+    return () => {
+      socket.off('chat message');
+    };
   }, [conversationId]);
 
   useEffect(() => {
@@ -92,8 +101,8 @@ const ChatScreen = ({ navigation }) => {
       );
       console.log('Message sent successfully');
       setApiMessages((prevMessages) => [response.data, ...prevMessages]); // Append new message to the list
+      socket.emit('chat message', { authToken: token, chatId: conversationId, content: inputText });
       setInputText(''); // Clear the input field
-      socket.emit('chat message', { senderId: 'yourSenderId', content: inputText }); // Emit the message
     } catch (error) {
       console.error('Error sending message:', error);
       Alert.alert('Error', 'Failed to send the message. Please try again.');
