@@ -177,102 +177,120 @@ const HomeScreen = () => {
   }
 
 
-
   return (
-    <ScrollView style={styles.container} ref={scrollViewRef} behavior="padding">
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Gemten Feed</Text>
-      </View>
-
-      {/* Post Form */}
-      <View style={{}}>
-        <TextInput style={styles.postInput}
-          placeholder="What's on your mind?"
-          value={content} onChangeText={(text) => setContent(text)}
-          multiline numberOfLines={4} />
-        <TouchableOpacity style={styles.postButton} onPress={handleAddPost}>
-          <Text style={styles.postButtonText}>Post</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Posts List */}
-      {posts.length > 0 ? (
-        <FlatList
-
-          data={posts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.postCard}>
-              {/* User Info Section */}
-              <View style={styles.userInfo}>
-                <Image
-                  source={{ uri: item.user.profile_pic || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png' }}
-                  style={styles.profilePic}
-                />
-                <View style={styles.userDetails}>
-                  <TouchableOpacity onPress={async () => {
-                    const username = await AsyncStorage.getItem('userName')
-                    if (item.user.username == username) navigation.navigate('Profile')
-                    else navigation.navigate('OtherProfile', { id: item.user.id });
-                  }}>
-                    <Text style={styles.username}>
-                      @{item.user.username} {(item.user.username === 'shishir' || item.user.username === 'gemten') && (
-                        <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
-                      )}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <Text style={styles.fullName}>
-                    {item.views} views • {new Date(item.created_at).toLocaleString()}
+    <View style={styles.container}>
+      {/* Main Feed */}
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.postCard}>
+            {/* User Info Section */}
+            <View style={styles.userInfo}>
+              <Image
+                source={{
+                  uri:
+                    item.user.profile_pic ||
+                    'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png',
+                }}
+                style={styles.profilePic}
+              />
+              <View style={styles.userDetails}>
+                <TouchableOpacity
+                  onPress={async () => {
+                    const username = await AsyncStorage.getItem('userName');
+                    if (item.user.username === username) {
+                      navigation.navigate('Profile');
+                    } else {
+                      navigation.navigate('OtherProfile', { id: item.user.id });
+                    }
+                  }}
+                >
+                  <Text style={styles.username}>
+                    @{item.user.username}{' '}
+                    {(item.user.username === 'shishir' || item.user.username === 'gemten') && (
+                      <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
+                    )}
                   </Text>
-                </View>
-              </View>
-
-
-              {/* Post Content */}
-              <Text style={styles.postContent}>{item.content}</Text>
-
-              {/* Media Section */}
-              {item.media && item.media.length > 0 ? (
-                <View horizontal showsHorizontalScrollIndicator={false}>
-                  {item.media.map((mediaItem, index) => (
-                    <Image key={index}
-                      source={{ uri: mediaItem.url }}
-                      style={styles.mediaImage} />
-                  ))}
-                </View>
-              ) : null}
-
-              {/* Post Actions */}
-              <View style={styles.postActions}>
-                <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
-                  <Icon name={item.is_liked ? 'heart' : 'heart-outline'} size={24} color={item.is_liked ? '#ff4444' : '#333'} />
-                  <Text style={styles.actionText}>{item.likes_count}</Text>
                 </TouchableOpacity>
-
-                {/* <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => openCommentModal(item)}>
-                  <Icon name="chatbubble-outline" size={24} color="#333" />
-                  <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
-                </TouchableOpacity> */}
+                <Text style={styles.fullName}>
+                  {item.views} views • {new Date(item.created_at).toLocaleString()}
+                </Text>
               </View>
             </View>
-          )}
-          nestedScrollEnabled={true}
-          
-        />
-      ) : (
-        <Text style={styles.noPostsText}>No posts available.</Text>
-      )}
+
+            {/* Post Content */}
+            <Text style={styles.postContent}>{item.content}</Text>
+
+            {/* Media Section */}
+            {item.media && item.media.length > 0 ? (
+              <View horizontal showsHorizontalScrollIndicator={false}>
+                {item.media.map((mediaItem, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: mediaItem.url }}
+                    style={styles.mediaImage}
+                  />
+                ))}
+              </View>
+            ) : null}
+
+            {/* Post Actions */}
+            <View style={styles.postActions}>
+              <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
+                <Icon
+                  name={item.is_liked ? 'heart' : 'heart-outline'}
+                  size={24}
+                  color={item.is_liked ? '#ff4444' : '#333'}
+                />
+                <Text style={styles.actionText}>{item.likes_count}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => openCommentModal(item)}>
+                <Icon name="chatbubble-outline" size={24} color="#333" />
+                <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        ListHeaderComponent={
+          // Header and Post Form
+          <View>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Gemten Feed</Text>
+            </View>
+
+            {/* Post Form */}
+            <View style={styles.postForm}>
+              <TextInput
+                style={styles.postInput}
+                placeholder="What's on your mind?"
+                value={content}
+                onChangeText={(text) => setContent(text)}
+                multiline
+                numberOfLines={4}
+              />
+              <TouchableOpacity style={styles.postButton} onPress={handleAddPost}>
+                <Text style={styles.postButtonText}>Post</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          // Display when there are no posts
+          <Text style={styles.noPostsText}>No posts available.</Text>
+        }
+        refreshControl={
+          // Pull-to-refresh functionality
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
 
       {/* Comment Modal */}
       <Modal visible={isModalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Comments ({selectedPost?.comments?.length || 0})</Text>
-
             {/* Display Existing Comments */}
             {selectedPost?.comments && selectedPost.comments.length > 0 ? (
               <FlatList
@@ -281,7 +299,9 @@ const HomeScreen = () => {
                 renderItem={({ item }) => (
                   <View style={styles.comment}>
                     <Image
-                      source={{ uri: item.user.profile_pic || 'https://via.placeholder.com/150' }}
+                      source={{
+                        uri: item.user.profile_pic || 'https://via.placeholder.com/150',
+                      }}
                       style={styles.commentProfilePic}
                     />
                     <View style={styles.commentContent}>
@@ -295,36 +315,26 @@ const HomeScreen = () => {
             ) : (
               <Text style={styles.noCommentsText}>No comments yet.</Text>
             )}
-
             {/* Add Comment Input */}
             <View style={styles.addComment}>
               <TextInput
                 style={styles.commentInput}
                 placeholder="Add a comment..."
                 value={newComment.post === selectedPost?.id ? newComment.content : ''}
-                onChangeText={(content) =>
-                  setNewComment({ post: selectedPost?.id, content })
-                } />
-              <TouchableOpacity
-                style={styles.commentSubmitButton}
-                onPress={handleAddComment}
-              >
+                onChangeText={(content) => setNewComment({ post: selectedPost?.id, content })}
+              />
+              <TouchableOpacity style={styles.commentSubmitButton} onPress={handleAddComment}>
                 <Text style={styles.commentSubmitButtonText}>Post</Text>
               </TouchableOpacity>
             </View>
-
             {/* Close Modal Button */}
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={closeCommentModal}
-            >
+            <TouchableOpacity style={styles.closeModalButton} onPress={closeCommentModal}>
               <Text style={styles.closeModalButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
-    </ScrollView>
+    </View>
   );
 };
 
