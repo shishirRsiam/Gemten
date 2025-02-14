@@ -7,6 +7,9 @@ import {
   Image,
   ScrollView,
   FlatList,
+  Modal,
+  TextInput,
+  Keyboard,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -20,6 +23,10 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [newComment, setNewComment] = useState({ post: null, content: '' });
+  const [selectedPost, setSelectedPost] = useState(null);
+
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -40,6 +47,80 @@ const ProfileScreen = () => {
     };
     fetchUserProfile();
   }, []);
+
+  const handleAddComment = async () => {
+
+    Keyboard.dismiss();
+    try {
+      if (!newComment.content.trim()) {
+        alert('Comment cannot be empty');
+        return;
+      }
+
+      const api = `${Api.add_comment}/`;
+      const response = await axios.post(api, newComment, {
+        headers: {
+          Authorization: await AsyncStorage.getItem('authToken'),
+        },
+      });
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === selectedPost.id
+            ? {
+              ...post,
+              comments: [...(post.comments || []), response.data],
+            }
+            : post
+        )
+      );
+      setSelectedPost((prev) => ({
+        ...prev,
+        comments: [...(prev.comments || []), response.data],
+      }));
+
+      setNewComment({ post: null, content: '' });
+    } catch (error) {
+      console.error('Error adding comment:', error.message || error);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
+
+  const handleLikePost = async (postId) => {
+    try {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+              ...post,
+              is_liked: !post.is_liked,
+              likes_count: post.is_liked ? post.likes_count - 1 : post.likes_count + 1,
+            }
+            : post
+        )
+      );
+
+      const api = `${Api.like_post}/${postId}/like/`;
+      await axios.post(api, {}, {
+        headers: {
+          Authorization: await AsyncStorage.getItem('authToken'),
+        },
+      });
+    } catch (error) {
+      console.error('Error liking post:', error.message || error);
+      alert('Failed to like the post. Please try again.');
+    }
+  };
+
+  const openCommentModal = (post) => {
+    setSelectedPost(post);
+    setIsModalVisible(true);
+  };
+
+  const closeCommentModal = () => {
+    setSelectedPost(null);
+    setIsModalVisible(false);
+  };
 
   if (loading) {
     return (
@@ -189,6 +270,56 @@ const ProfileScreen = () => {
           <Text style={styles.noPostsText}>No posts available.</Text>
         }
       />
+
+      {/* Comment Modal */}
+      <Modal visible={isModalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Comments ({selectedPost?.comments?.length || 0})</Text>
+            {/* Display Existing Comments */}
+            {selectedPost?.comments && selectedPost.comments.length > 0 ? (
+              <FlatList
+                data={selectedPost.comments}
+                keyExtractor={(comment) => comment.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.comment}>
+                    <Image
+                      source={{
+                        uri: item.user.profile_pic || 'https://via.placeholder.com/150',
+                      }}
+                      style={styles.commentProfilePic}
+                    />
+                    <View style={styles.commentContent}>
+                      <Text style={styles.commentAuthor}>@{item.user.username}</Text>
+                      <Text style={styles.commentText}>{item.content}</Text>
+                    </View>
+                  </View>
+                )}
+                nestedScrollEnabled={true}
+              />
+            ) : (
+              <Text style={styles.noCommentsText}>No comments yet.</Text>
+            )}
+            {/* Add Comment Input */}
+            <View style={styles.addComment}>
+              <TextInput
+                style={styles.commentInput}
+                placeholder="Add a comment..."
+                value={newComment.post === selectedPost?.id ? newComment.content : ''}
+                onChangeText={(content) => setNewComment({ post: selectedPost?.id, content })}
+              />
+              <TouchableOpacity style={styles.commentSubmitButton} onPress={handleAddComment}>
+                <Text style={styles.commentSubmitButtonText}>Post</Text>
+              </TouchableOpacity>
+            </View>
+            {/* Close Modal Button */}
+            <TouchableOpacity style={styles.closeModalButton} onPress={closeCommentModal}>
+              <Text style={styles.closeModalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -493,8 +624,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   infoSection: {
-    width: '100%',
-    marginBottom: 20,
+    // width: '100%',
+    // marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,

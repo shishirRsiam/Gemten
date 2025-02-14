@@ -37,7 +37,7 @@ const ConversationShowingScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchConversations();
-    }, [])
+    }, [navigation])
   );
 
   const handleConversationPress = (conversationId) => {

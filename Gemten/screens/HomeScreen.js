@@ -81,7 +81,6 @@ const HomeScreen = () => {
     }
   };
 
-
   const handleAddPost = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
