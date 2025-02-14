@@ -62,138 +62,136 @@ const ProfileScreen = () => {
     userProfile;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Profile Picture */}
-      <View style={styles.profilePicContainer}>
-        <Image source={{ uri: 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png' }} style={styles.profilePic} />
-      </View>
-
-      {/* Full Name */}
-      <Text style={styles.name}>
-        {user.first_name} {user.last_name}
-      </Text>
-
-      {/* Username */}
-      <Text style={styles.username}>@{user.username}</Text>
-      {/* Bio Section */}
-      <View style={styles.bioSection}>
-        {/* <Text style={styles.sectionTitle}>About Me</Text> */}
-        <Text style={styles.bioText}>{bio || 'No bio available'}</Text>
-      </View>
-
-      {/* Divider */}
-      <View style={styles.divider} />
-
-      {/* User Info Section */}
-      <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Personal Information</Text>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Email:</Text>
-          <Text style={styles.infoValue}>{user.email}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Phone:</Text>
-          <Text style={styles.infoValue}>{phone_no || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Date of Birth:</Text>
-          <Text style={styles.infoValue}>{date_of_birth || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Gender:</Text>
-          <Text style={styles.infoValue}>{gender || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Address:</Text>
-          <Text style={styles.infoValue}>{address || 'Not provided'}</Text>
-        </View>
-      </View>
-
-      {/* Bio Section */}
-      {/* <View style={styles.bioSection}>
-        <Text style={styles.sectionTitle}>About Me</Text>
-        <Text style={styles.bioText}>{bio || 'No bio available'}</Text>
-      </View> */}
-
-      {/* Edit Profile Button */}
-      {/* <TouchableOpacity style={styles.editButton}>
-        <Text style={styles.editButtonText}>Edit Profile</Text>
-      </TouchableOpacity> */}
-
-      {/* Posts List */}
-      {posts.length > 0 ? (
-        <FlatList data={posts} keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.postCard}>
-              {/* User Info Section */}
-              <View style={styles.userInfo}>
-                <Image
-                  source={{ uri: item.user.profile_pic || 'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png' }}
-                  style={styles.PostProfilePic}
-                />
-                <View style={styles.userDetails}>
-                  <TouchableOpacity onPress={async () => {
-                    const username = await AsyncStorage.getItem('userName')
-                    if (item.user.username == username) navigation.navigate('Profile')
-                    else navigation.navigate('OtherProfile', { id: item.user.id });
-                  }}>
-                    <Text style={styles.username}>
-                      @{item.user.username} {item.user.username === 'shishir' && (
-                        <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
-                      )}
-                    </Text>
-                  </TouchableOpacity>
-
-
-                  <Text style={styles.fullName}>
-                    {item.views} views • {new Date(item.created_at).toLocaleString()}
-                  </Text>
-                </View>
-              </View>
-
-
-              {/* Post Content */}
-              <Text style={styles.postContent}>{item.content}</Text>
-
-              {/* Media Section */}
-              {item.media && item.media.length > 0 ? (
-                <View horizontal showsHorizontalScrollIndicator={false}>
-                  {item.media.map((mediaItem, index) => (
-                    <Image
-                      key={index}
-                      source={{ uri: mediaItem.url }}
-                      style={styles.mediaImage}
-                    />
-                  ))}
-                </View>
-              ) : null}
-
-              {/* Post Actions */}
-              <View style={styles.postActions}>
-                <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
-                  <Icon name={item.is_liked ? 'heart' : 'heart-outline'} size={24} color={item.is_liked ? '#ff4444' : '#333'} />
-                  <Text style={styles.actionText}>{item.likes_count}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => openCommentModal(item)}
-                >
-                  <Icon name="chatbubble-outline" size={24} color="#333" />
-                  <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
-                </TouchableOpacity>
+    <View>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.postCard}>
+            {/* User Info Section */}
+            <View style={styles.userInfo}>
+              <Image
+                source={{
+                  uri:
+                    item.user.profile_pic ||
+                    'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png',
+                }}
+                style={styles.PostProfilePic}
+              />
+              <View style={styles.userDetails}>
+                <Text style={styles.username}>
+                  @{item.user.username}{' '}
+                  {item.user.username === 'shishir' && (
+                    <Icon name="checkmark-circle" size={16} color="#1DA1F2" />
+                  )}
+                </Text>
+                <Text style={styles.fullName}>
+                  {item.views} views • {new Date(item.created_at).toLocaleString()}
+                </Text>
               </View>
             </View>
-          )}
-        />
-      ) : (
-        <Text style={styles.noPostsText}>No posts available.</Text>
-      )}
 
-    </ScrollView>
+            {/* Post Content */}
+            <Text style={styles.postContent}>{item.content}</Text>
+
+            {/* Media Section */}
+            {item.media && item.media.length > 0 ? (
+              <View horizontal showsHorizontalScrollIndicator={false}>
+                {item.media.map((mediaItem, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri: mediaItem.url }}
+                    style={styles.mediaImage}
+                  />
+                ))}
+              </View>
+            ) : null}
+
+            {/* Post Actions */}
+            <View style={styles.postActions}>
+              <TouchableOpacity style={styles.actionButton} onPress={() => handleLikePost(item.id)}>
+                <Icon
+                  name={item.is_liked ? 'heart' : 'heart-outline'}
+                  size={24}
+                  color={item.is_liked ? '#ff4444' : '#333'}
+                />
+                <Text style={styles.actionText}>{item.likes_count}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => openCommentModal(item)}
+              >
+                <Icon name="chatbubble-outline" size={24} color="#333" />
+                <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        ListHeaderComponent={
+          // Header: Profile Picture, User Info, Bio, etc.
+          <View style={styles.header}>
+            {/* Profile Picture */}
+            <View style={styles.profilePicContainer}>
+              <Image
+                source={{
+                  uri:
+                    user.profile_pic ||
+                    'https://images.rawpixel.com/image_png_800/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTAxL3JtNjA5LXNvbGlkaWNvbi13LTAwMi1wLnBuZw.png',
+                }}
+                style={styles.profilePic}
+              />
+            </View>
+
+            {/* Full Name */}
+            <Text style={styles.name}>
+              {user.first_name} {user.last_name}
+            </Text>
+
+            {/* Username */}
+            <Text style={styles.profileUsername}>@{user.username}</Text>
+
+            {/* Bio Section */}
+            <View style={styles.bioSection}>
+              <Text style={styles.bioText}>{bio || 'No bio available'}</Text>
+            </View>
+
+            {/* Divider */}
+            <View style={styles.divider} />
+
+            {/* User Info Section */}
+            <View style={styles.infoSection}>
+              <Text style={styles.sectionTitle}>Personal Information</Text>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Email:</Text>
+                <Text style={styles.infoValue}>{user.email}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Phone:</Text>
+                <Text style={styles.infoValue}>{phone_no || 'Not provided'}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Date of Birth:</Text>
+                <Text style={styles.infoValue}>{date_of_birth || 'Not provided'}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Gender:</Text>
+                <Text style={styles.infoValue}>{gender || 'Not provided'}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Address:</Text>
+                <Text style={styles.infoValue}>{address || 'Not provided'}</Text>
+              </View>
+            </View>
+          </View>
+        }
+        ListEmptyComponent={
+          // Display when there are no posts
+          <Text style={styles.noPostsText}>No posts available.</Text>
+        }
+      />
+    </View>
   );
 };
-
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
@@ -213,6 +211,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    textAlign: 'center',
   },
   headerTitle: {
     fontSize: 24,
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     backgroundColor: '#ffffff', // White background
-    padding: 20,
+    // padding: 10,
   },
   userInfo: {
     flexDirection: 'row',
@@ -402,10 +405,14 @@ const styles = StyleSheet.create({
   userDetails: {
     flexDirection: 'column',
   },
-  username: {
-    fontSize: 16,
+  profileUsername: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 5,
+    textAlign: 'center',
   },
   fullName: {
     fontSize: 14,
@@ -452,7 +459,11 @@ const styles = StyleSheet.create({
     color: '#e74c3c', // Red text for errors
   },
   profilePicContainer: {
-    marginBottom: 20,
+    // marginBottom: 20,
+    padding: 20,
+    // margin: 20,
+    color: '#fff',
+    alignItems: 'center',
   },
   profilePic: {
     width: 150,
@@ -464,17 +475,20 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333333', // Dark gray text
+    color: '#fff',
     marginBottom: 8,
+    textAlign: 'center',
   },
   username: {
-    fontSize: 20,
-    color: '#3b82f6', // Blue text for username
+    fontSize: 16,
+    // color: '#fff',
     marginBottom: 2,
+    fontWeight: 'bold',
+    // textAlign: 'center',
   },
   divider: {
     height: 1,
-    width: '80%',
+    width: '100%',
     backgroundColor: '#e0e0e0', // Light gray divider
     marginVertical: 20,
   },
@@ -485,7 +499,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333333',
+    // color: 'black',
     marginBottom: 16,
   },
   infoItem: {
@@ -495,20 +509,20 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 16,
-    color: '#666666', // Lighter gray text
   },
   infoValue: {
     fontSize: 16,
-    color: '#333333', // Dark gray text
     fontWeight: '500',
   },
   bioSection: {
     width: '100%',
+    textAlign: 'center',
+    color: '#fff',
     // marginBottom: 20,
   },
   bioText: {
     fontSize: 16,
-    color: '#666666',
+    color: '#fff',
     textAlign: 'center',
     lineHeight: 24,
   },
