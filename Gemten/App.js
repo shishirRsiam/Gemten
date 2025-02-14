@@ -23,8 +23,8 @@ const Tab = createBottomTabNavigator();
 
 import io from 'socket.io-client';
 
-const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
-const socket = io(SOCKET_URL);
+// const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
+// const socket = io(SOCKET_URL);
 
 
 const AuthenticatedTabs = ({ setUser }) => {
@@ -36,9 +36,9 @@ const AuthenticatedTabs = ({ setUser }) => {
       console.error('Error logging out:', error.message);
       Alert.alert('Error', 'Failed to log out. Please try again.');
     }
-    return () => {
-      socket.off('chat message');
-    };
+    // return () => {
+    //   socket.off('chat message');
+    // };
   };
 
   return (
@@ -162,21 +162,21 @@ const UnauthenticatedScreens = ({ setUser }) => {
 export default function App() {
   const [user, setUser] = useState(null);
 
-  const setSoketConnection = async () => {
-    const userId = await AsyncStorage.getItem('userName');
-    if (userId) {
-      console.log('username ==>', userId);
-      socket.emit('set username', { userId, token: await AsyncStorage.getItem('authToken') });
+  // const setSoketConnection = async () => {
+  //   const userId = await AsyncStorage.getItem('userName');
+  //   if (userId) {
+  //     console.log('username ==>', userId);
+  //     socket.emit('set username', { userId, token: await AsyncStorage.getItem('authToken') });
 
-      // Listen for incoming messages
-      socket.on('chat message', ({ senderId, content }) => {
-        setApiMessages((prevMessages) => [
-          ...prevMessages,
-          { senderId, content, id: Date.now() }, // Add a unique ID for rendering
-        ]);
-      });
-    }
-  };
+  //     // Listen for incoming messages
+  //     socket.on('chat message', ({ senderId, content }) => {
+  //       setApiMessages((prevMessages) => [
+  //         ...prevMessages,
+  //         { senderId, content, id: Date.now() }, // Add a unique ID for rendering
+  //       ]);
+  //     });
+  //   }
+  // };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -198,9 +198,9 @@ export default function App() {
       }
     };
     checkAuth();
-    return () => {
-      socket.off('chat message'); // Remove the listener
-    };
+    // return () => {
+    //   socket.off('chat message'); // Remove the listener
+    // };
   }, []);
 
   return (

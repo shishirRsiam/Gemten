@@ -1,4 +1,5 @@
-let baseUrl = 'http://192.168.0.102:8000/api';
+// let baseUrl = 'http://192.168.0.102:8000/api';
+let baseUrl = 'https://gemten-django-backend.vercel.app/api';
 
 const Api = {
     baseUrl: baseUrl,

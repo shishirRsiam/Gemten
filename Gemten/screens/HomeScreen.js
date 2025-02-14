@@ -26,6 +26,7 @@ const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newComment, setNewComment] = useState({ post: null, content: '' });
@@ -258,9 +259,7 @@ const HomeScreen = () => {
               <FlatList
                 data={selectedPost.comments}
                 keyExtractor={(comment) => comment.id.toString()}
-                refreshControl={
-                  <RefreshControl refreshing={refreshing} onRefresh={fetchConversations} colors={['#1DA1F2']} />
-                }
+                
                 renderItem={({ item }) => (
                   <View style={styles.comment}>
                     <Image
