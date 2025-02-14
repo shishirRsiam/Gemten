@@ -11,20 +11,13 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import PostDetailsScreen from './screens/PostDetailsScreen';
-import AddPostScreen from './screens/AddPostScreen'; // New screen for adding posts
-import Icon from 'react-native-vector-icons/Ionicons'; // For icons
+import Icon from 'react-native-vector-icons/Ionicons';
 import OtherProfileScreen from './screens/OtherProfileScreen';
 import ChatScreen from './screens/ChatScreen';
 import ConversationShowingScreen from './screens/ConversationScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-
-
-import io from 'socket.io-client';
-
-// const SOCKET_URL = 'http://192.168.0.102:3000'; // Replace with your server URL
-// const socket = io(SOCKET_URL);
 
 
 const AuthenticatedTabs = ({ setUser }) => {
@@ -36,9 +29,6 @@ const AuthenticatedTabs = ({ setUser }) => {
       console.error('Error logging out:', error.message);
       Alert.alert('Error', 'Failed to log out. Please try again.');
     }
-    // return () => {
-    //   socket.off('chat message');
-    // };
   };
 
   return (
@@ -95,10 +85,10 @@ const AuthenticatedTabs = ({ setUser }) => {
 
         <Tab.Screen
           name="Logout"
-          component={View} // Placeholder component
+          component={View} 
           listeners={() => ({
             tabPress: (e) => {
-              e.preventDefault(); // Prevent default navigation
+              e.preventDefault(); 
               Alert.alert(
                 'Logout',
                 'Are you sure you want to log out?',
@@ -140,7 +130,6 @@ const AuthenticatedScreens = ({ setUser }) => {
   );
 }
 
-// Unauthenticated User Screens (Login and Signup)
 const UnauthenticatedScreens = ({ setUser }) => {
   return (
     <Stack.Navigator initialRouteName="Login">
@@ -162,22 +151,6 @@ const UnauthenticatedScreens = ({ setUser }) => {
 export default function App() {
   const [user, setUser] = useState(null);
 
-  // const setSoketConnection = async () => {
-  //   const userId = await AsyncStorage.getItem('userName');
-  //   if (userId) {
-  //     console.log('username ==>', userId);
-  //     socket.emit('set username', { userId, token: await AsyncStorage.getItem('authToken') });
-
-  //     // Listen for incoming messages
-  //     socket.on('chat message', ({ senderId, content }) => {
-  //       setApiMessages((prevMessages) => [
-  //         ...prevMessages,
-  //         { senderId, content, id: Date.now() }, // Add a unique ID for rendering
-  //       ]);
-  //     });
-  //   }
-  // };
-
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem('authToken');
@@ -190,7 +163,6 @@ export default function App() {
             },
           });
           setUser(response.data.user_info);
-          // setSoketConnection();
         } catch (error) {
           alert('Error fetching user data');
           console.error('Error fetching user data:', error.response?.data || error.message);
@@ -198,14 +170,11 @@ export default function App() {
       }
     };
     checkAuth();
-    // return () => {
-    //   socket.off('chat message'); // Remove the listener
-    // };
   }, []);
 
   return (
     <NavigationContainer>
-      {user ? (
+      {user != null ? (
         <AuthenticatedScreens setUser={setUser} />
       ) : (
         <UnauthenticatedScreens setUser={setUser} />

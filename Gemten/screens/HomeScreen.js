@@ -139,6 +139,24 @@ const HomeScreen = () => {
     }
   };
 
+  // Pull-to-refresh functionality
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axios.get(Api.get_posts, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error refreshing posts:', error.message || error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const openCommentModal = (post) => {
     setSelectedPost(post);
     setIsModalVisible(true);
@@ -161,7 +179,7 @@ const HomeScreen = () => {
 
 
   return (
-    <ScrollView style={styles.container} ref={scrollViewRef}>
+    <ScrollView style={styles.container} ref={scrollViewRef} behavior="padding">
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Gemten Feed</Text>
@@ -233,16 +251,17 @@ const HomeScreen = () => {
                   <Text style={styles.actionText}>{item.likes_count}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => openCommentModal(item)}
-                >
+                  onPress={() => openCommentModal(item)}>
                   <Icon name="chatbubble-outline" size={24} color="#333" />
                   <Text style={styles.actionText}>{item.comments?.length || 0}</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             </View>
           )}
+          nestedScrollEnabled={true}
+          
         />
       ) : (
         <Text style={styles.noPostsText}>No posts available.</Text>
@@ -259,7 +278,6 @@ const HomeScreen = () => {
               <FlatList
                 data={selectedPost.comments}
                 keyExtractor={(comment) => comment.id.toString()}
-                
                 renderItem={({ item }) => (
                   <View style={styles.comment}>
                     <Image
@@ -272,6 +290,7 @@ const HomeScreen = () => {
                     </View>
                   </View>
                 )}
+                nestedScrollEnabled={true}
               />
             ) : (
               <Text style={styles.noCommentsText}>No comments yet.</Text>

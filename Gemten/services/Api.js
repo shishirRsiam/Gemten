@@ -1,11 +1,12 @@
-// let baseUrl = 'http://192.168.0.102:8000/api';
-let baseUrl = 'https://gemten-django-backend.vercel.app/api';
+let baseUrl = 'http://192.168.0.104:8000/api';
+// let baseUrl = 'https://gemten-django-backend.vercel.app/api';
+
 
 const Api = {
     baseUrl: baseUrl,
     get_posts: `${baseUrl}/posts/`,  
-    get_other_profile: `${baseUrl}/user`, 
     connect: `${baseUrl}/connect`, 
+    get_other_profile: `${baseUrl}/user`, 
     accept_friend_request: `${baseUrl}/user`, 
     cancel_friend_request: `${baseUrl}/user`, 
     add_post: `${baseUrl}/posts/`,  
