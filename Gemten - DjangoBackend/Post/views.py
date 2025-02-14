@@ -3,11 +3,14 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from .models import Post, Comment, PostMedia
 from .serializers import PostSerializer, CommentSerializer
+from datetime import datetime
 
 class PostAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, post_id=None):
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"))
+
         if post_id:
             post = Post.objects.get(id=post_id)
             serializer = PostSerializer(post, context={'request': request})
@@ -15,6 +18,7 @@ class PostAPIView(APIView):
         
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True, context={'request': request})
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S %Z"))
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):

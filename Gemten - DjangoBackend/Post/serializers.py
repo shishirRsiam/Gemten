@@ -23,8 +23,8 @@ class PostSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  
     is_liked = serializers.SerializerMethodField()  
     likes_count = serializers.SerializerMethodField()  
-    media = PostMediaSerializer(many=True, required=False)
-    comments = CommentSerializer(many=True, required=False)
+    # media = PostMediaSerializer(many=True, required=False)
+    # comments = CommentSerializer(many=True, required=False)
     class Meta:
         model = Post
         fields = '__all__'
